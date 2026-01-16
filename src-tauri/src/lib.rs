@@ -1,10 +1,8 @@
 mod commands;
+mod audio;
 use std::{sync::{Mutex, mpsc::{self, Sender}}, thread};
 
-pub enum AudioCommand {
-    Start, 
-    Stop
-}
+use crate::audio::AudioCommand;
 
 pub struct AppState {
     command_tx: Sender<AudioCommand>
@@ -14,22 +12,7 @@ pub struct AppState {
 pub fn run() {
     let (tx, rx) = mpsc::channel::<AudioCommand>();
 
-    thread::spawn(move || {
-        let mut stream: Option<cpal::Stream> = None;
-
-        match rx.recv() {
-            Ok(AudioCommand::Start) => {
-                println!("Start recording...");
-            },
-            Ok(AudioCommand::Stop) => {
-                println!("Stop recording...");
-                stream = None;
-            },
-            Err(_) => {
-                println!("Channel closed.");
-            }
-        }
-    });
+    audio::spawn_audio_thread(rx);
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())

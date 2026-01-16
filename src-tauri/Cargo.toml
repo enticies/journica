@@ -27,3 +27,4 @@ serde_json = "1"
 
 # Audio
 cpal = "0.15"
+hound = "3.5.1"
