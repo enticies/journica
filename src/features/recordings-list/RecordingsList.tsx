@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { readFile } from "@tauri-apps/plugin-fs";
 import { useRef, useState } from "react";
-import { Entry } from "../hooks/useEntries";
+import { Entry } from "./useEntries";
 
 interface Props {
   entries: Entry[];

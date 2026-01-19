@@ -33,3 +33,5 @@ hound = "3.5.1"
 # Database
 sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite"] }
 uuid = { version = "1", features = ["v4"] }
+whisper-rs = "0.15.1"
+rubato = "1.0.0"
