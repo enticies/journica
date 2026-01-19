@@ -2812,6 +2812,8 @@ dependencies = [
 name = "offline-audio-journal"
 version = "0.1.0"
 dependencies = [
+ "audioadapter",
+ "audioadapter-buffers",
  "cpal",
  "hound",
  "rubato",

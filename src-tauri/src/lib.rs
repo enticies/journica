@@ -1,6 +1,7 @@
 mod audio;
 mod commands;
 mod db;
+mod transcription;
 
 use std::sync::{Mutex, mpsc::{self, Sender}};
 use tauri::Manager;
