@@ -37,20 +37,15 @@ pub fn spawn_transcription_thread(file_path: PathBuf) {
         params.set_print_realtime(false);
         params.set_print_timestamps(false);
 
-        // now we can run the model
         state
             .full(params, &samples[..])
             .expect("failed to run model");
 
-        // fetch the results
         for segment in state.as_iter() {
             println!(
                 "[{} - {}]: {}",
-                // these timestamps are in centiseconds (10s of milliseconds)
                 segment.start_timestamp(),
                 segment.end_timestamp(),
-                // this default Display implementation will result in any invalid UTF-8
-                // being converted into the Unicode replacement character, U+FFFD
                 segment
             );
         }

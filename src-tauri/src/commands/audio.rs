@@ -120,6 +120,7 @@ pub async fn stop_recording(
             .app_data_dir()
             .map_err(|e| e.to_string())?
             .join("recordings");
+
         let file_path = recordings_dir.join(&info.filename);
 
         transcription::spawn_transcription_thread(file_path);
