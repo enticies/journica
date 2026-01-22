@@ -37,9 +37,9 @@ migrate-add:
 		echo "Or: cargo install sqlx-cli --features sqlite"; \
 		exit 1; \
 	fi
-	@echo "Creating migration: $(MIGRATION_NAME)"
+	@echo "Creating reversible migration: $(MIGRATION_NAME)"
 	@echo "Database: $(TAURI_DB_PATH)"
-	@DATABASE_URL="$(DATABASE_URL)" $(SQLX_CMD) migrate add $(MIGRATION_NAME)
+	@DATABASE_URL="$(DATABASE_URL)" $(SQLX_CMD) migrate add -r $(MIGRATION_NAME)
 
 migrate-run: 
 	@if [ -z "$(SQLX_CMD)" ]; then \

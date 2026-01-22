@@ -1,0 +1,5 @@
+DROP TRIGGER IF EXISTS entries_au;
+DROP TRIGGER IF EXISTS entries_ad;
+DROP TRIGGER IF EXISTS entries_ai;
+DROP TABLE IF EXISTS entries_fts;
+DROP TABLE IF EXISTS entries;
