@@ -1,6 +1,7 @@
 import { Entry } from "./useEntries";
 import { useTranscriptionProgress } from "../transcription/useTranscriptionProgress";
 import { useAudioPlayer } from "./useAudioPlayer";
+import { formatDuration } from "../../shared/ui";
 
 interface Props {
   entries: Entry[];
@@ -24,11 +25,15 @@ export function RecordingsList({ entries, onDelete }: Props) {
                   {entry.title || entry.filename.replace(".wav", "")}
                 </div>
                 <div className="text-xs text-gray-500">
-                  {new Date(entry.created_at * 1000).toLocaleString()}
+                  {new Date(entry.created_at * 1000).toLocaleString()}<br/>
+                  {entry.duration_seconds !== null && (
+                    <span className="ml-2">{formatDuration(entry.duration_seconds)}</span>
+                  )}
                 </div>
                 {progressMap[entry.id] !== undefined && (
                   <span>Transcribing: {progressMap[entry.id]}%</span>
                 )}
+
               </div>
               <div className="flex gap-1 ml-2">
                 <button

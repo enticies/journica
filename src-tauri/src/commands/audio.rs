@@ -1,12 +1,12 @@
-use std::sync::Mutex;
-use std::time::{SystemTime, UNIX_EPOCH};
 use serde::Serialize;
 use sqlx::SqlitePool;
+use std::sync::Mutex;
+use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::Manager;
 use uuid::Uuid;
 
-use crate::{AppState, AudioCommand, transcription};
 use super::db::Entry;
+use crate::{transcription, AppState, AudioCommand};
 
 #[derive(Clone, Serialize)]
 pub struct RecordingInfo {
@@ -28,7 +28,11 @@ fn timestamp_filename(secs: i64) -> String {
     let mut remaining_days = days_since_epoch as i32;
 
     loop {
-        let days_in_year = if year % 4 == 0 && (year % 100 != 0 || year % 400 == 0) { 366 } else { 365 };
+        let days_in_year = if year % 4 == 0 && (year % 100 != 0 || year % 400 == 0) {
+            366
+        } else {
+            365
+        };
         if remaining_days < days_in_year {
             break;
         }
@@ -37,7 +41,20 @@ fn timestamp_filename(secs: i64) -> String {
     }
 
     let is_leap = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
-    let days_in_months: [i32; 12] = [31, if is_leap { 29 } else { 28 }, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    let days_in_months: [i32; 12] = [
+        31,
+        if is_leap { 29 } else { 28 },
+        31,
+        30,
+        31,
+        30,
+        31,
+        31,
+        30,
+        31,
+        30,
+        31,
+    ];
 
     let mut month = 0;
     for (i, &days) in days_in_months.iter().enumerate() {
@@ -49,7 +66,10 @@ fn timestamp_filename(secs: i64) -> String {
     }
     let day = remaining_days + 1;
 
-    format!("{:04}-{:02}-{:02}_{:02}-{:02}-{:02}.wav", year, month, day, hours, minutes, seconds)
+    format!(
+        "{:04}-{:02}-{:02}_{:02}-{:02}-{:02}.wav",
+        year, month, day, hours, minutes, seconds
+    )
 }
 
 #[tauri::command]
@@ -86,7 +106,11 @@ pub fn start_recording(
         .map_err(|e| e.to_string())?;
 
     println!("Started recording: {}", id);
-    Ok(RecordingInfo { id, filename, created_at })
+    Ok(RecordingInfo {
+        id,
+        filename,
+        created_at,
+    })
 }
 
 #[tauri::command]
@@ -95,26 +119,21 @@ pub async fn stop_recording(
     state: tauri::State<'_, Mutex<AppState>>,
     pool: tauri::State<'_, SqlitePool>,
 ) -> Result<Option<Entry>, String> {
-    let info = {
+
+    let (info, duration_seconds) = {
         let mut state = state.lock().unwrap();
+        
+        let (response_tx, response_rx) = std::sync::mpsc::channel();
         state
             .command_tx
-            .send(AudioCommand::Stop)
+            .send(AudioCommand::Stop { response_tx })
             .map_err(|e| e.to_string())?;
-        state.current_recording.take()
+        
+        let duration = response_rx.recv().ok().flatten();
+        (state.current_recording.take(), duration)
     };
 
     if let Some(info) = info {
-        sqlx::query("INSERT INTO entries (id, filename, created_at) VALUES (?, ?, ?)")
-            .bind(&info.id)
-            .bind(&info.filename)
-            .bind(info.created_at)
-            .execute(pool.inner())
-            .await
-            .map_err(|e| e.to_string())?;
-
-        println!("Saved entry: {}", info.id);
-
         let recordings_dir = app
             .path()
             .app_data_dir()
@@ -123,18 +142,28 @@ pub async fn stop_recording(
 
         let file_path = recordings_dir.join(&info.filename);
 
+        sqlx::query("INSERT INTO entries (id, filename, created_at, duration_seconds) VALUES (?, ?, ?, ?)")
+            .bind(&info.id)
+            .bind(&info.filename)
+            .bind(info.created_at)
+            .bind(duration_seconds)
+            .execute(pool.inner())
+            .await
+            .map_err(|e| e.to_string())?;
+
+        println!("Saved entry: {}", info.id);
+
         transcription::spawn_transcription_thread(file_path, info.id.clone(), app.clone());
 
         Ok(Some(Entry {
             id: info.id,
             filename: info.filename,
             created_at: info.created_at,
-            duration_seconds: None,
+            duration_seconds: duration_seconds,
             transcript: None,
             title: None,
         }))
     } else {
         Ok(None)
     }
-
 }

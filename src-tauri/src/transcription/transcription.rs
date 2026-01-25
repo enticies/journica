@@ -17,7 +17,7 @@ pub struct TranscriptSegment {
 
 #[derive(Clone, serde::Serialize)]
 pub struct TranscriptionProgress {
-    pub entry_id: String, 
+    pub entry_id: String,
     pub progress: i32, // 0-100
 }
 pub struct TranscriptionResult {
@@ -58,16 +58,19 @@ pub fn spawn_transcription_thread(file_path: PathBuf, entry_id: String, app: App
         params.set_print_realtime(false);
         params.set_print_timestamps(false);
         params.set_token_timestamps(true);
-        params.set_max_len(1); 
+        params.set_max_len(1);
 
         let app_for_callback = app.clone();
         let entry_id_for_callback = entry_id.clone();
 
         params.set_progress_callback_safe(move |progress| {
-            let _ = app_for_callback.emit("transcription-progress", TranscriptionProgress {
-                entry_id: entry_id_for_callback.clone(),
-                progress
-            });
+            let _ = app_for_callback.emit(
+                "transcription-progress",
+                TranscriptionProgress {
+                    entry_id: entry_id_for_callback.clone(),
+                    progress,
+                },
+            );
         });
 
         state
@@ -94,6 +97,8 @@ pub fn spawn_transcription_thread(file_path: PathBuf, entry_id: String, app: App
         }
 
         let full_text = full_text_parts.join(" ");
+
+        println!("Transcript for entry {}: {}", entry_id, full_text);
 
         tauri::async_runtime::block_on(async {
             if let Err(e) = sqlx::query("UPDATE entries SET transcript = ? WHERE id = ?")

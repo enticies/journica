@@ -3,13 +3,13 @@ use hound::{WavSpec, WavWriter};
 use std::fs::File;
 use std::io::BufWriter;
 use std::path::PathBuf;
-use std::sync::mpsc::Receiver;
+use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, Mutex};
 use std::thread;
 
 pub enum AudioCommand {
     Start { file_path: PathBuf },
-    Stop,
+    Stop { response_tx: Sender<Option<f64>> },
 }
 
 pub fn spawn_audio_thread(rx: Receiver<AudioCommand>) {
@@ -19,16 +19,20 @@ pub fn spawn_audio_thread(rx: Receiver<AudioCommand>) {
 
         let host = cpal::default_host();
         println!("Audio host: {:?}", host.id());
-        
+
         let device = host.default_input_device().expect("No input device");
-        let device_name = device.name().unwrap_or_else(|e| format!("Unknown device (error: {e})"));
+        let device_name = device
+            .name()
+            .unwrap_or_else(|e| format!("Unknown device (error: {e})"));
         println!("Recording device: {device_name}");
-        
+
         let config = device.default_input_config().expect("No default config");
-        println!("Audio config: {} channels, {} Hz, {:?}", 
-                 config.channels(), 
-                 config.sample_rate().0, 
-                 config.sample_format());
+        println!(
+            "Audio config: {} channels, {} Hz, {:?}",
+            config.channels(),
+            config.sample_rate().0,
+            config.sample_format()
+        );
 
         loop {
             match rx.recv() {
@@ -65,15 +69,25 @@ pub fn spawn_audio_thread(rx: Receiver<AudioCommand>) {
                     new_stream.play().unwrap();
                     _stream = Some(new_stream);
                 }
-                Ok(AudioCommand::Stop) => {
+                Ok(AudioCommand::Stop { response_tx }) => {
                     println!("Stopping recording...");
                     _stream = None;
 
-                    if let Some(w) = writer.take() {
+                    let duration = if let Some(w) = writer.take() {
                         if let Ok(w) = Arc::try_unwrap(w) {
-                            w.into_inner().unwrap().finalize().ok();
+                            let w = w.into_inner().unwrap();
+                            let duration_seconds =
+                                w.duration() as f64 / w.spec().sample_rate as f64;
+                            w.finalize().ok();
+                            Some(duration_seconds)
+                        } else {
+                            None
                         }
-                    }
+                    } else {
+                        None
+                    };
+
+                    response_tx.send(duration).ok();
                 }
                 Err(_) => break,
             }
