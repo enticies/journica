@@ -1,7 +1,7 @@
 import { Entry } from "./useEntries";
 import { useTranscriptionProgress } from "../transcription/useTranscriptionProgress";
 import { useAudioPlayer } from "./useAudioPlayer";
-import { formatDuration } from "../../shared/ui";
+import { formatDuration } from "../../shared/utils/formatDuration";
 
 interface Props {
   entries: Entry[];

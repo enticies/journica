@@ -1,4 +1,5 @@
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
+use cpal::{Device, SupportedStreamConfig};
 use hound::{WavSpec, WavWriter};
 use std::fs::File;
 use std::io::BufWriter;
@@ -12,10 +13,65 @@ pub enum AudioCommand {
     Stop { response_tx: Sender<Option<f64>> },
 }
 
+pub fn start_audio(
+    config: &SupportedStreamConfig,
+    device: &Device,
+    file_path: PathBuf,
+) -> Option<cpal::Stream> {
+    println!("Starting recording to {:?}", file_path);
+
+    let spec = WavSpec {
+        channels: config.channels(),
+        sample_rate: config.sample_rate().0,
+        bits_per_sample: 32,
+        sample_format: hound::SampleFormat::Float,
+    };
+    let wav_writer = Arc::new(Mutex::new(WavWriter::create(&file_path, spec).unwrap()));
+
+    let writer_clone = wav_writer.clone();
+    let stream_config = config.clone().into();
+    let new_stream = device
+        .build_input_stream(
+            &stream_config,
+            move |data: &[f32], _: &cpal::InputCallbackInfo| {
+                if let Ok(mut w) = writer_clone.lock() {
+                    for &sample in data {
+                        w.write_sample(sample).ok();
+                    }
+                }
+            },
+            |err| eprintln!("Stream error: {err}"),
+            None,
+        )
+        .unwrap();
+
+    new_stream.play().unwrap();
+    Some(new_stream)
+}
+
+pub fn stop_audio(mut writer: Option<Arc<Mutex<WavWriter<BufWriter<File>>>>>) -> Option<f64> {
+    println!("Stopping recording...");
+
+    let duration = if let Some(w) = writer.take() {
+        if let Ok(w) = Arc::try_unwrap(w) {
+            let w = w.into_inner().unwrap();
+            let duration_seconds = w.duration() as f64 / w.spec().sample_rate as f64;
+            w.finalize().ok();
+            Some(duration_seconds)
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+
+    duration
+}
+
 pub fn spawn_audio_thread(rx: Receiver<AudioCommand>) {
     thread::spawn(move || {
         let mut _stream: Option<cpal::Stream> = None;
-        let mut writer: Option<Arc<Mutex<WavWriter<BufWriter<File>>>>> = None;
+        let writer: Option<Arc<Mutex<WavWriter<BufWriter<File>>>>> = None;
 
         let host = cpal::default_host();
         println!("Audio host: {:?}", host.id());
@@ -37,55 +93,13 @@ pub fn spawn_audio_thread(rx: Receiver<AudioCommand>) {
         loop {
             match rx.recv() {
                 Ok(AudioCommand::Start { file_path }) => {
-                    println!("Starting recording to {:?}", file_path);
-
-                    let spec = WavSpec {
-                        channels: config.channels(),
-                        sample_rate: config.sample_rate().0,
-                        bits_per_sample: 32,
-                        sample_format: hound::SampleFormat::Float,
-                    };
-                    let wav_writer = WavWriter::create(&file_path, spec).unwrap();
-                    let wav_writer = Arc::new(Mutex::new(wav_writer));
-                    writer = Some(wav_writer.clone());
-
-                    let writer_clone = wav_writer.clone();
-                    let stream_config = config.clone().into();
-                    let new_stream = device
-                        .build_input_stream(
-                            &stream_config,
-                            move |data: &[f32], _: &cpal::InputCallbackInfo| {
-                                if let Ok(mut w) = writer_clone.lock() {
-                                    for &sample in data {
-                                        w.write_sample(sample).ok();
-                                    }
-                                }
-                            },
-                            |err| eprintln!("Stream error: {err}"),
-                            None,
-                        )
-                        .unwrap();
-
-                    new_stream.play().unwrap();
-                    _stream = Some(new_stream);
+                    _stream = start_audio(&config, &device, file_path);
                 }
                 Ok(AudioCommand::Stop { response_tx }) => {
-                    println!("Stopping recording...");
                     _stream = None;
 
-                    let duration = if let Some(w) = writer.take() {
-                        if let Ok(w) = Arc::try_unwrap(w) {
-                            let w = w.into_inner().unwrap();
-                            let duration_seconds =
-                                w.duration() as f64 / w.spec().sample_rate as f64;
-                            w.finalize().ok();
-                            Some(duration_seconds)
-                        } else {
-                            None
-                        }
-                    } else {
-                        None
-                    };
+                    // TODO see if clone can be removed
+                    let duration = stop_audio(writer.clone());
 
                     response_tx.send(duration).ok();
                 }

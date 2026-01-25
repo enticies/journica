@@ -6,7 +6,6 @@ use sqlx::SqlitePool;
 use tauri::{AppHandle, Emitter, Manager};
 use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextParameters};
 
-use std::sync::Arc;
 
 pub struct TranscriptSegment {
     segment_index: u64,
@@ -19,10 +18,6 @@ pub struct TranscriptSegment {
 pub struct TranscriptionProgress {
     pub entry_id: String,
     pub progress: i32, // 0-100
-}
-pub struct TranscriptionResult {
-    full_text: String,
-    segments: Vec<TranscriptSegment>,
 }
 
 pub fn spawn_transcription_thread(file_path: PathBuf, entry_id: String, app: AppHandle) {
