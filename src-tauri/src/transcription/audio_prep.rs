@@ -1,11 +1,11 @@
+use audioadapter::Adapter;
+use audioadapter_buffers::owned::InterleavedOwned;
 use hound::WavReader;
 use rubato::{
     Async, FixedAsync, Resampler, SincInterpolationParameters, SincInterpolationType,
     WindowFunction,
 };
 use std::path::Path;
-use audioadapter::Adapter;
-use audioadapter_buffers::owned::InterleavedOwned;
 
 const WHISPER_SAMPLE_RATE: u32 = 16000;
 
@@ -72,10 +72,9 @@ fn resample(
     from_rate: u32,
     to_rate: u32,
 ) -> Result<Vec<f32>, Box<dyn std::error::Error + Send + Sync>> {
-
     let ratio = to_rate as f64 / from_rate as f64;
     let chunk_size = 1024;
-    let channels = 1; 
+    let channels = 1;
 
     let params = SincInterpolationParameters {
         sinc_len: 256,
@@ -85,14 +84,8 @@ fn resample(
         window: WindowFunction::BlackmanHarris2,
     };
 
-    let mut resampler = Async::<f32>::new_sinc(
-        ratio,
-        1.1, 
-        &params,
-        chunk_size,
-        channels,
-        FixedAsync::Input,
-    )?;
+    let mut resampler =
+        Async::<f32>::new_sinc(ratio, 1.1, &params, chunk_size, channels, FixedAsync::Input)?;
 
     let mut output = Vec::new();
 

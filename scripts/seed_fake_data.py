@@ -49,32 +49,31 @@ def ensure_schema(cursor: sqlite3.Cursor) -> None:
           filename TEXT NOT NULL,
           created_at INTEGER NOT NULL,
           duration_seconds REAL,
-          transcript TEXT,
           title TEXT
         );
 
         CREATE VIRTUAL TABLE IF NOT EXISTS entries_fts USING fts5(
           title,
-          transcript,
+          filename,
           content='entries',
           content_rowid='rowid'
         );
 
         CREATE TRIGGER IF NOT EXISTS entries_ai AFTER INSERT ON entries BEGIN
-          INSERT INTO entries_fts(rowid, title, transcript)
-          VALUES (NEW.rowid, NEW.title, NEW.transcript);
+          INSERT INTO entries_fts(rowid, title, filename)
+          VALUES (NEW.rowid, NEW.title, NEW.filename);
         END;
 
         CREATE TRIGGER IF NOT EXISTS entries_ad AFTER DELETE ON entries BEGIN
-          INSERT INTO entries_fts(entries_fts, rowid, title, transcript)
-          VALUES ('delete', OLD.rowid, OLD.title, OLD.transcript);
+          INSERT INTO entries_fts(entries_fts, rowid, title, filename)
+          VALUES ('delete', OLD.rowid, OLD.title, OLD.filename);
         END;
 
         CREATE TRIGGER IF NOT EXISTS entries_au AFTER UPDATE ON entries BEGIN
-          INSERT INTO entries_fts(entries_fts, rowid, title, transcript)
-          VALUES ('delete', OLD.rowid, OLD.title, OLD.transcript);
-          INSERT INTO entries_fts(rowid, title, transcript)
-          VALUES (NEW.rowid, NEW.title, NEW.transcript);
+          INSERT INTO entries_fts(entries_fts, rowid, title, filename)
+          VALUES ('delete', OLD.rowid, OLD.title, OLD.filename);
+          INSERT INTO entries_fts(rowid, title, filename)
+          VALUES (NEW.rowid, NEW.title, NEW.filename);
         END;
 
         CREATE TABLE IF NOT EXISTS transcript_segments (
@@ -89,6 +88,12 @@ def ensure_schema(cursor: sqlite3.Cursor) -> None:
 
         CREATE INDEX IF NOT EXISTS idx_segments_entry_id ON transcript_segments(entry_id);
         CREATE INDEX IF NOT EXISTS idx_segments_timestamps ON transcript_segments(entry_id, start_ms, end_ms);
+
+        CREATE TABLE IF NOT EXISTS transcript_overrides (
+          entry_id TEXT PRIMARY KEY REFERENCES entries(id) ON DELETE CASCADE,
+          text TEXT NOT NULL,
+          updated_at INTEGER NOT NULL
+        );
 
         CREATE TABLE IF NOT EXISTS tags (
           id TEXT PRIMARY KEY,
@@ -176,11 +181,9 @@ def seed_fake_entries(app_dir: Path, count: int, append: bool, seed: int) -> Non
 
         title = f"FAKE: {rnd.choice(TOPICS)}"
         segments = transcript_parts(rnd, rnd.randint(3, 5))
-        transcript = " ".join(segments)
-
         cursor.execute(
-            "INSERT INTO entries (id, filename, created_at, duration_seconds, transcript, title) VALUES (?, ?, ?, ?, ?, ?)",
-            (entry_id, filename, created_at, duration_seconds, transcript, title),
+            "INSERT INTO entries (id, filename, created_at, duration_seconds, title) VALUES (?, ?, ?, ?, ?)",
+            (entry_id, filename, created_at, duration_seconds, title),
         )
 
         total_ms = int(duration_seconds * 1000)

@@ -1,67 +1,19 @@
-import { invoke } from "@tauri-apps/api/core";
 import { useCallback, useEffect, useRef, useState } from "react";
-
-export interface Tag {
-  id: string;
-  name: string;
-  created_at: number;
-}
-
-export interface Entry {
-  id: string;
-  filename: string;
-  created_at: number;
-  duration_seconds: number | null;
-  transcript: string | null;
-  title: string | null;
-  tags: Tag[];
-}
-
-interface EntryRow {
-  id: string;
-  filename: string;
-  created_at: number;
-  duration_seconds: number | null;
-  transcript: string | null;
-  title: string | null;
-}
-
-interface EntryTagRecord {
-  entry_id: string;
-  tag_id: string;
-  tag_name: string;
-  tag_created_at: number;
-}
+import {
+  createTag as createTagRequest,
+  deleteEntry as deleteEntryRequest,
+  deleteTag as deleteTagRequest,
+  getEntryTags,
+  listTags,
+  queryEntries,
+  setEntryTags as setEntryTagsRequest,
+} from "../api/recordingsApi";
+import { mapEntryTags, sortTagsByName } from "../model/entryMappers";
+import { Entry, Tag } from "../model/types";
 
 const PAGE_SIZE = 100;
 
-function sortTagsByName(tags: Tag[]): Tag[] {
-  return [...tags].sort((a, b) => a.name.localeCompare(b.name));
-}
-
-function mapEntryTags(records: EntryTagRecord[]): Map<string, Tag[]> {
-  const tagsByEntry = new Map<string, Tag[]>();
-
-  for (const record of records) {
-    const tag: Tag = {
-      id: record.tag_id,
-      name: record.tag_name,
-      created_at: record.tag_created_at,
-    };
-
-    const existing = tagsByEntry.get(record.entry_id) ?? [];
-    existing.push(tag);
-    tagsByEntry.set(record.entry_id, existing);
-  }
-
-  for (const [entryId, entryTags] of tagsByEntry.entries()) {
-    tagsByEntry.set(entryId, sortTagsByName(entryTags));
-  }
-
-  return tagsByEntry;
-}
-
-export function useEntries() {
+export function useEntriesQuery() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,7 +26,7 @@ export function useEntries() {
 
   const loadTags = useCallback(async () => {
     try {
-      const result = await invoke<Tag[]>("list_tags");
+      const result = await listTags();
       setTags(sortTagsByName(result));
     } catch (error) {
       console.error("Failed to load tags:", error);
@@ -92,7 +44,7 @@ export function useEntries() {
       }
 
       try {
-        const result = await invoke<EntryRow[]>("query_entries", {
+        const result = await queryEntries({
           query: debouncedQuery || null,
           limit: PAGE_SIZE,
           offset,
@@ -101,14 +53,13 @@ export function useEntries() {
         let tagsByEntry = new Map<string, Tag[]>();
         if (entryIds.length > 0) {
           try {
-            const tagRecords = await invoke<EntryTagRecord[]>("get_entry_tags", {
-              entryIds,
-            });
+            const tagRecords = await getEntryTags(entryIds);
             tagsByEntry = mapEntryTags(tagRecords);
           } catch (error) {
             console.error("Failed to load entry tags:", error);
           }
         }
+
         const hydratedEntries: Entry[] = result.map((entry) => ({
           ...entry,
           tags: tagsByEntry.get(entry.id) ?? [],
@@ -142,13 +93,16 @@ export function useEntries() {
     await runQuery({ offset: entries.length, append: true });
   }, [entries.length, hasMore, loading, loadingMore, runQuery]);
 
-  const deleteEntry = async (id: string) => {
-    await invoke("delete_entry", { id });
-    await loadEntries();
-  };
+  const deleteEntry = useCallback(
+    async (id: string) => {
+      await deleteEntryRequest(id);
+      await loadEntries();
+    },
+    [loadEntries],
+  );
 
   const createTag = useCallback(async (name: string) => {
-    const createdTag = await invoke<Tag>("create_tag", { name });
+    const createdTag = await createTagRequest(name);
     setTags((previous) => {
       const withoutExisting = previous.filter((tag) => tag.id !== createdTag.id);
       return sortTagsByName([...withoutExisting, createdTag]);
@@ -157,7 +111,7 @@ export function useEntries() {
   }, []);
 
   const deleteTag = useCallback(async (tagId: string) => {
-    await invoke("delete_tag", { tagId });
+    await deleteTagRequest(tagId);
     setTags((previous) => previous.filter((tag) => tag.id !== tagId));
     setEntries((previous) =>
       previous.map((entry) => ({
@@ -187,7 +141,7 @@ export function useEntries() {
       );
 
       try {
-        await invoke("set_entry_tags", {
+        await setEntryTagsRequest({
           entryId,
           tagIds: uniqueTagIds,
         });
@@ -210,11 +164,11 @@ export function useEntries() {
   }, [searchQuery]);
 
   useEffect(() => {
-    loadEntries();
+    void loadEntries();
   }, [loadEntries]);
 
   useEffect(() => {
-    loadTags();
+    void loadTags();
   }, [loadTags]);
 
   return {

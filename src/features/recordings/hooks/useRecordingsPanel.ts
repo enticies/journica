@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { useEntries } from "./useEntries";
-import { useSelectedEntry } from "./useSelectedEntry";
+import { useEntriesQuery } from "./useEntriesQuery";
+import { useEntrySelection } from "./useEntrySelection";
 
 export function useRecordingsPanel() {
   const {
@@ -19,7 +19,7 @@ export function useRecordingsPanel() {
     createTag,
     deleteTag,
     setEntryTags,
-  } = useEntries();
+  } = useEntriesQuery();
 
   const visibleEntries = useMemo(() => {
     if (selectedFilterTagIds.length === 0) {
@@ -32,7 +32,7 @@ export function useRecordingsPanel() {
     });
   }, [entries, selectedFilterTagIds]);
 
-  const { selectedEntryId, setSelectedEntryId, selectedEntry, highlightedTranscript } = useSelectedEntry(visibleEntries, searchQuery);
+  const { selectedEntryId, setSelectedEntryId, selectedEntry } = useEntrySelection(visibleEntries);
 
   const scriptMessage = useMemo(() => {
     if (!selectedEntry) {
@@ -70,7 +70,6 @@ export function useRecordingsPanel() {
     selectedEntryId,
     setSelectedEntryId,
     selectedEntry,
-    highlightedTranscript,
     scriptMessage,
   };
 }

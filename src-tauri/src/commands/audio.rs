@@ -119,16 +119,15 @@ pub async fn stop_recording(
     state: tauri::State<'_, Mutex<AppState>>,
     pool: tauri::State<'_, SqlitePool>,
 ) -> Result<Option<Entry>, String> {
-
     let (info, duration_seconds) = {
         let mut state = state.lock().unwrap();
-        
+
         let (response_tx, response_rx) = std::sync::mpsc::channel();
         state
             .command_tx
             .send(AudioCommand::Stop { response_tx })
             .map_err(|e| e.to_string())?;
-        
+
         let duration = response_rx.recv().ok().flatten();
         (state.current_recording.take(), duration)
     };
@@ -142,14 +141,16 @@ pub async fn stop_recording(
 
         let file_path = recordings_dir.join(&info.filename);
 
-        sqlx::query("INSERT INTO entries (id, filename, created_at, duration_seconds) VALUES (?, ?, ?, ?)")
-            .bind(&info.id)
-            .bind(&info.filename)
-            .bind(info.created_at)
-            .bind(duration_seconds)
-            .execute(pool.inner())
-            .await
-            .map_err(|e| e.to_string())?;
+        sqlx::query(
+            "INSERT INTO entries (id, filename, created_at, duration_seconds) VALUES (?, ?, ?, ?)",
+        )
+        .bind(&info.id)
+        .bind(&info.filename)
+        .bind(info.created_at)
+        .bind(duration_seconds)
+        .execute(pool.inner())
+        .await
+        .map_err(|e| e.to_string())?;
 
         println!("Saved entry: {}", info.id);
 

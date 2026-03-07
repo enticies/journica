@@ -3,7 +3,10 @@ mod commands;
 mod db;
 mod transcription;
 
-use std::sync::{Mutex, mpsc::{self, Sender}};
+use std::sync::{
+    mpsc::{self, Sender},
+    Mutex,
+};
 use tauri::Manager;
 
 use crate::audio::AudioCommand;
@@ -30,7 +33,9 @@ pub fn run() {
         .setup(|app| {
             let handle = app.handle().clone();
             tauri::async_runtime::block_on(async {
-                let pool = db::init(&handle).await.expect("Failed to initialize database");
+                let pool = db::init(&handle)
+                    .await
+                    .expect("Failed to initialize database");
                 handle.manage(pool);
             });
             Ok(())

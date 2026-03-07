@@ -6,7 +6,6 @@ use sqlx::SqlitePool;
 use tauri::{AppHandle, Emitter, Manager};
 use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextParameters};
 
-
 pub struct TranscriptSegment {
     segment_index: u64,
     start_ms: u64,
@@ -75,14 +74,11 @@ pub fn spawn_transcription_thread(file_path: PathBuf, entry_id: String, app: App
         let db = app.state::<SqlitePool>();
 
         let mut segments: Vec<TranscriptSegment> = Vec::new();
-        let mut full_text_parts: Vec<String> = Vec::new();
-
         for (i, segment) in state.as_iter().enumerate() {
             let start_ms = (segment.start_timestamp() * 10) as u64;
             let end_ms = (segment.end_timestamp() * 10) as u64;
             let text = segment.to_str().unwrap_or_default().to_owned();
 
-            full_text_parts.push(text.clone());
             segments.push(TranscriptSegment {
                 segment_index: i as u64,
                 start_ms,
@@ -91,18 +87,22 @@ pub fn spawn_transcription_thread(file_path: PathBuf, entry_id: String, app: App
             });
         }
 
-        let full_text = full_text_parts.join(" ");
-
-        println!("Transcript for entry {}: {}", entry_id, full_text);
-
         tauri::async_runtime::block_on(async {
-            if let Err(e) = sqlx::query("UPDATE entries SET transcript = ? WHERE id = ?")
-                .bind(&full_text)
+            if let Err(e) = sqlx::query("DELETE FROM transcript_segments WHERE entry_id = ?")
                 .bind(&entry_id)
                 .execute(db.inner())
                 .await
             {
-                eprintln!("Failed to save transcript: {}", e);
+                eprintln!("Failed to clear existing transcript segments: {}", e);
+                return;
+            }
+
+            if let Err(e) = sqlx::query("DELETE FROM transcript_overrides WHERE entry_id = ?")
+                .bind(&entry_id)
+                .execute(db.inner())
+                .await
+            {
+                eprintln!("Failed to clear transcript override: {}", e);
                 return;
             }
 
@@ -123,7 +123,7 @@ pub fn spawn_transcription_thread(file_path: PathBuf, entry_id: String, app: App
             }
 
             println!(
-                "Saved transcript and {} segments for entry: {}",
+                "Saved {} transcript segments for entry: {}",
                 segments.len(),
                 entry_id
             );

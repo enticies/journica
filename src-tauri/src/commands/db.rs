@@ -13,22 +13,15 @@ fn tokenize_query(query: &str) -> Vec<String> {
         .collect()
 }
 
-fn build_fts_query(terms: &[String]) -> Option<String> {
-    if terms.is_empty() {
-        return None;
-    }
-
-    Some(
-        terms
-            .iter()
-            .map(|token| format!("{}*", token))
-            .collect::<Vec<_>>()
-            .join(" AND "),
-    )
-}
-
 fn normalize_tag_name(name: &str) -> String {
     name.trim().to_lowercase()
+}
+
+fn effective_transcript_expr(entry_alias: &str, override_alias: &str) -> String {
+    format!(
+        "COALESCE({}.text, (SELECT group_concat(text, ' ') FROM (SELECT text FROM transcript_segments WHERE entry_id = {}.id ORDER BY segment_index)))",
+        override_alias, entry_alias
+    )
 }
 
 async fn ensure_tags_schema(pool: &SqlitePool) -> Result<(), String> {
@@ -108,23 +101,23 @@ pub struct EntryTagRecord {
 }
 
 #[derive(Clone, Serialize, Deserialize, FromRow)]
-pub struct TranscriptSegment {
-
-}
+pub struct TranscriptSegment {}
 
 #[tauri::command]
-pub async fn get_transcript_segments(entry_id: String) {
-
-}
+pub async fn get_transcript_segments(entry_id: String) {}
 
 #[tauri::command]
-pub async fn get_segment_at_time(entry_id: String, time_ms: i64) {
-}
+pub async fn get_segment_at_time(entry_id: String, time_ms: i64) {}
 
 #[tauri::command]
 pub async fn get_entries(pool: tauri::State<'_, SqlitePool>) -> Result<Vec<Entry>, String> {
     let entries = sqlx::query_as::<_, Entry>(
-        "SELECT id, filename, created_at, duration_seconds, transcript, title FROM entries ORDER BY created_at DESC"
+        "SELECT e.id, e.filename, e.created_at, e.duration_seconds,
+                COALESCE(o.text, (SELECT group_concat(text, ' ') FROM (SELECT text FROM transcript_segments WHERE entry_id = e.id ORDER BY segment_index))) AS transcript,
+                e.title
+         FROM entries e
+         LEFT JOIN transcript_overrides o ON o.entry_id = e.id
+         ORDER BY e.created_at DESC",
     )
     .fetch_all(pool.inner())
     .await
@@ -148,7 +141,13 @@ pub async fn query_entries(
 
     if trimmed_query.is_empty() {
         let entries = sqlx::query_as::<_, Entry>(
-            "SELECT id, filename, created_at, duration_seconds, transcript, title FROM entries ORDER BY created_at DESC LIMIT ? OFFSET ?",
+            "SELECT e.id, e.filename, e.created_at, e.duration_seconds,
+                    COALESCE(o.text, (SELECT group_concat(text, ' ') FROM (SELECT text FROM transcript_segments WHERE entry_id = e.id ORDER BY segment_index))) AS transcript,
+                    e.title
+             FROM entries e
+             LEFT JOIN transcript_overrides o ON o.entry_id = e.id
+             ORDER BY e.created_at DESC
+             LIMIT ? OFFSET ?",
         )
         .bind(safe_limit)
         .bind(safe_offset)
@@ -161,31 +160,18 @@ pub async fn query_entries(
 
     let terms = tokenize_query(&trimmed_query);
 
-    let Some(fts_query) = build_fts_query(&terms) else {
+    if terms.is_empty() {
         return Ok(Vec::new());
-    };
-
-    let entries = sqlx::query_as::<_, Entry>(
-        "SELECT e.id, e.filename, e.created_at, e.duration_seconds, e.transcript, e.title
-         FROM entries e
-         JOIN entries_fts ON entries_fts.rowid = e.rowid
-         WHERE entries_fts MATCH ?
-         ORDER BY bm25(entries_fts), e.created_at DESC
-         LIMIT ? OFFSET ?",
-    )
-    .bind(fts_query)
-    .bind(safe_limit)
-    .bind(safe_offset)
-    .fetch_all(pool.inner())
-    .await
-    .map_err(|e| e.to_string())?;
-
-    if !entries.is_empty() {
-        return Ok(entries);
     }
 
-    let mut fallback_sql = String::from(
-        "SELECT id, filename, created_at, duration_seconds, transcript, title FROM entries WHERE ",
+    let effective_transcript = effective_transcript_expr("e", "o");
+
+    let mut fallback_sql = format!(
+        "SELECT e.id, e.filename, e.created_at, e.duration_seconds, {} AS transcript, e.title
+         FROM entries e
+         LEFT JOIN transcript_overrides o ON o.entry_id = e.id
+         WHERE ",
+        effective_transcript
     );
 
     for (index, _) in terms.iter().enumerate() {
@@ -193,12 +179,14 @@ pub async fn query_entries(
             fallback_sql.push_str(" AND ");
         }
 
-        fallback_sql.push_str(
-            "(LOWER(COALESCE(title, '')) LIKE LOWER(?) OR LOWER(filename) LIKE LOWER(?) OR LOWER(COALESCE(transcript, '')) LIKE LOWER(?) OR EXISTS (SELECT 1 FROM entry_tags et JOIN tags t ON t.id = et.tag_id WHERE et.entry_id = entries.id AND LOWER(t.name) LIKE LOWER(?)))",
-        );
+        let tag_clause = "EXISTS (SELECT 1 FROM entry_tags et JOIN tags t ON t.id = et.tag_id WHERE et.entry_id = e.id AND LOWER(t.name) LIKE LOWER(?))";
+        fallback_sql.push_str(&format!(
+            "(LOWER(COALESCE(e.title, '')) LIKE LOWER(?) OR LOWER(e.filename) LIKE LOWER(?) OR LOWER(COALESCE({}, '')) LIKE LOWER(?) OR {})",
+            effective_transcript, tag_clause
+        ));
     }
 
-    fallback_sql.push_str(" ORDER BY created_at DESC LIMIT ? OFFSET ?");
+    fallback_sql.push_str(" ORDER BY e.created_at DESC LIMIT ? OFFSET ?");
 
     let mut fallback_query = sqlx::query_as::<_, Entry>(&fallback_sql);
 
@@ -371,13 +359,16 @@ pub async fn delete_entry(
     app: tauri::AppHandle,
     pool: tauri::State<'_, SqlitePool>,
 ) -> Result<(), String> {
-    let entry = sqlx::query_as::<_, Entry>(
-        "SELECT id, filename, created_at, duration_seconds, transcript, title FROM entries WHERE id = ?"
-    )
-    .bind(&id)
-    .fetch_optional(pool.inner())
-    .await
-    .map_err(|e| e.to_string())?;
+    #[derive(FromRow)]
+    struct EntryFile {
+        filename: String,
+    }
+
+    let entry = sqlx::query_as::<_, EntryFile>("SELECT filename FROM entries WHERE id = ?")
+        .bind(&id)
+        .fetch_optional(pool.inner())
+        .await
+        .map_err(|e| e.to_string())?;
 
     if let Some(entry) = entry {
         let file_path = app

@@ -1,5 +1,5 @@
 import { RecordingControl } from "./features/recorder";
-import { RecordingsList, ScriptPanel, useRecordingsPanel } from "./features/recordings-list";
+import { RecordingsSidebar, ScriptPanel, useRecordingsPanel } from "./features/recordings";
 
 function App() {
   const {
@@ -22,43 +22,48 @@ function App() {
     selectedEntryId,
     setSelectedEntryId,
     selectedEntry,
-    highlightedTranscript,
     scriptMessage,
   } = useRecordingsPanel();
 
   return (
     <div className="h-screen flex">
-      <main className="flex-1 flex flex-col min-w-0">
-        <div className="border-b p-4 bg-white">
-          <RecordingControl onStop={loadEntries} />
-        </div>
-        <ScriptPanel
-          selectedEntry={selectedEntry}
-          highlightedTranscript={highlightedTranscript}
-          scriptMessage={scriptMessage}
-        />
-      </main>
       <aside className="w-80 border-l bg-gray-50">
-        <RecordingsList
+        <RecordingsSidebar
           entries={entries}
           totalEntries={totalEntries}
           tags={tags}
-          onDelete={deleteEntry}
+          selectedEntry={selectedEntry}
+          onDeleteEntry={deleteEntry}
           onCreateTag={createTag}
           onDeleteTag={deleteTag}
           onSetEntryTags={setEntryTags}
-          onSelect={setSelectedEntryId}
+          onSelectEntry={setSelectedEntryId}
           selectedEntryId={selectedEntryId}
           searchQuery={searchQuery}
-          onSearchQueryChange={setSearchQuery}
+          onSearchQueryChange={(value) => {
+            setSearchQuery(value);
+          }}
           selectedFilterTagIds={selectedFilterTagIds}
-          onSelectedFilterTagIdsChange={setSelectedFilterTagIds}
+          onSelectedFilterTagIdsChange={(tagIds) => {
+            setSelectedFilterTagIds(tagIds);
+          }}
           onLoadMore={loadMore}
           loading={loading}
           loadingMore={loadingMore}
           hasMore={hasMore}
         />
       </aside>
+      <main className="flex-1 flex flex-col min-w-0">
+        <div className="border-b p-4 bg-white">
+          <RecordingControl onStop={loadEntries} />
+        </div>
+        <ScriptPanel
+          selectedEntry={selectedEntry}
+          searchQuery={searchQuery}
+          scriptMessage={scriptMessage}
+        />
+      </main>
+
     </div>
   );
 }

@@ -1,4 +1,4 @@
-use sqlx::{SqlitePool, sqlite::SqlitePoolOptions, migrate::MigrateDatabase};
+use sqlx::{migrate::MigrateDatabase, sqlite::SqlitePoolOptions, SqlitePool};
 use tauri::{AppHandle, Manager};
 
 pub async fn init(app: &AppHandle) -> Result<SqlitePool, Box<dyn std::error::Error>> {
@@ -17,9 +17,7 @@ pub async fn init(app: &AppHandle) -> Result<SqlitePool, Box<dyn std::error::Err
         .connect(&db_url)
         .await?;
 
-    sqlx::migrate!("./migrations")
-        .run(&pool)
-        .await?;
+    sqlx::migrate!("./migrations").run(&pool).await?;
 
     Ok(pool)
 }

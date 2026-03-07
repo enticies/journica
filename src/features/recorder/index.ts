@@ -1,2 +1,2 @@
-export { RecordingControl } from "./RecordingControl";
-export { useRecording } from "./useRecording";
+export { RecordingControl } from "./ui/RecordingControl";
+export { useRecordingSession } from "./hooks/useRecordingSession";
