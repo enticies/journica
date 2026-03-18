@@ -13,7 +13,7 @@ import { Entry, Tag } from "../model/types";
 
 const PAGE_SIZE = 100;
 
-export function useEntriesQuery() {
+export function useEntriesQuery(folderId?: string | null) {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +48,7 @@ export function useEntriesQuery() {
           query: debouncedQuery || null,
           limit: PAGE_SIZE,
           offset,
+          folderId,
         });
         const entryIds = result.map((entry) => entry.id);
         let tagsByEntry = new Map<string, Tag[]>();
@@ -78,7 +79,7 @@ export function useEntriesQuery() {
         }
       }
     },
-    [debouncedQuery],
+    [debouncedQuery, folderId],
   );
 
   const loadEntries = useCallback(async () => {

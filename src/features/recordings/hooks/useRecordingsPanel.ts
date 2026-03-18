@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useEntriesQuery } from "./useEntriesQuery";
 import { useEntrySelection } from "./useEntrySelection";
 
-export function useRecordingsPanel() {
+export function useRecordingsPanel(folderId?: string | null) {
   const {
     entries,
     tags,
@@ -19,7 +19,7 @@ export function useRecordingsPanel() {
     createTag,
     deleteTag,
     setEntryTags,
-  } = useEntriesQuery();
+  } = useEntriesQuery(folderId);
 
   const visibleEntries = useMemo(() => {
     if (selectedFilterTagIds.length === 0) {

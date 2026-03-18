@@ -3,7 +3,10 @@
 
 @theme {
   --font-sans: "Manrope", "Segoe UI", sans-serif;
+  --color-light-20: #FAF9F5;
   --color-light-50: #F3F0E7;
+  --color-dark-20: #B8B4A5;
+
 }
 
 :root {

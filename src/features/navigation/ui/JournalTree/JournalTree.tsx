@@ -1,4 +1,5 @@
 import { FolderNode } from "../../hooks/useFolderTree";
+import { ChevronRightIcon } from "../icons/ChevronRightIcon";
 
 interface Props {
   nodes: FolderNode[];
@@ -65,8 +66,8 @@ export function JournalTree({
               }}
             >
               {hasChildren && (
-                <span className="w-4 text-xs select-none">
-                  {isExpanded ? "\u25BE" : "\u25B8"}
+                <span className="w-4 h-4 flex items-center justify-center select-none">
+                  <ChevronRightIcon expanded={isExpanded} />
                 </span>
               )}
               {!hasChildren && <span className="w-4" />}

@@ -457,7 +457,20 @@ pub async fn delete_entry(
 #[tauri::command]
 pub async fn list_folders(pool: tauri::State<'_, SqlitePool>) -> Result<Vec<Folder>, String> {
     let folders = sqlx::query_as::<_, Folder>(
-        "SELECT id, parent_id, name, created_at, updated_at FROM folders ORDER BY name COLLATE NOCASE ASC",
+        "WITH RECURSIVE folders_with_entries(id, parent_id, name, created_at, updated_at) AS (
+            SELECT f.id, f.parent_id, f.name, f.created_at, f.updated_at
+            FROM folders f
+            JOIN (SELECT DISTINCT folder_id FROM entries) e ON e.folder_id = f.id
+
+            UNION
+
+            SELECT p.id, p.parent_id, p.name, p.created_at, p.updated_at
+            FROM folders p
+            JOIN folders_with_entries c ON c.parent_id = p.id
+        )
+        SELECT DISTINCT id, parent_id, name, created_at, updated_at
+        FROM folders_with_entries
+        ORDER BY name COLLATE NOCASE ASC",
     )
     .fetch_all(pool.inner())
     .await

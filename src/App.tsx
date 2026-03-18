@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useRecordingSession } from "./features/recorder";
 import { NavigationSidebar, useFolderTree } from "./features/navigation";
+import { RecordingsSidebar, ScriptPanel, useRecordingsPanel } from "./features/recordings";
 
 function App() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [folderSearchQuery, setFolderSearchQuery] = useState("");
 
   const {
     journalNodes,
@@ -18,17 +19,39 @@ function App() {
     void reloadFolders();
   });
 
+  const {
+    entries,
+    totalEntries,
+    tags,
+    loading,
+    loadingMore,
+    hasMore,
+    searchQuery,
+    setSearchQuery,
+    selectedFilterTagIds,
+    setSelectedFilterTagIds,
+    loadMore,
+    deleteEntry,
+    createTag,
+    deleteTag,
+    setEntryTags,
+    selectedEntry,
+    selectedEntryId,
+    setSelectedEntryId,
+    scriptMessage,
+  } = useRecordingsPanel(selectedFolderId);
+
   const handleNewEntry = () => {
     void toggleRecording();
   };
 
   return (
-    <div className="h-screen flex justify-center bg-white">
-      <div className="flex w-[960px] h-full">
-        <aside className="w-[204px] shrink-0">
+    <div className="min-h-screen bg-white">
+      <div className="flex min-h-screen w-full flex-col md:flex-row">
+        <aside className="md:min-w-56 md:basis-1/5 md:max-w-sm">
           <NavigationSidebar
-            searchQuery={searchQuery}
-            onSearchQueryChange={setSearchQuery}
+            searchQuery={folderSearchQuery}
+            onSearchQueryChange={setFolderSearchQuery}
             isRecording={isRecording}
             onNewEntry={handleNewEntry}
             journalNodes={journalNodes}
@@ -39,10 +62,36 @@ function App() {
           />
         </aside>
 
-        <div className="w-[280px] shrink-0 border-r bg-red-200">
+        <div className="min-h-40 border-r md:min-w-72 md:basis-1/4">
+          <RecordingsSidebar
+            entries={entries}
+            totalEntries={totalEntries}
+            tags={tags}
+            selectedEntry={selectedEntry}
+            selectedEntryId={selectedEntryId}
+            searchQuery={searchQuery}
+            selectedFilterTagIds={selectedFilterTagIds}
+            loading={loading}
+            loadingMore={loadingMore}
+            hasMore={hasMore}
+            onDeleteEntry={async (id) => {
+              await deleteEntry(id);
+              await reloadFolders();
+            }}
+            onCreateTag={createTag}
+            onDeleteTag={deleteTag}
+            onSetEntryTags={setEntryTags}
+            onSelectEntry={setSelectedEntryId}
+            onSearchQueryChange={setSearchQuery}
+            onSelectedFilterTagIdsChange={setSelectedFilterTagIds}
+            onLoadMore={() => {
+              void loadMore();
+            }}
+          />
         </div>
 
-        <main className="flex-1 min-w-0 bg-green-200">
+        <main className="min-h-40 flex flex-1 min-w-0">
+          <ScriptPanel selectedEntry={selectedEntry} searchQuery={searchQuery} scriptMessage={scriptMessage} />
         </main>
       </div>
     </div>

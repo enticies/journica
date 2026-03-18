@@ -1,6 +1,7 @@
 import { Typography } from "../../../../shared/ui/Typography";
 import { FolderNode } from "../../hooks/useFolderTree";
 import { JournalTree } from "../JournalTree";
+import { NavigationSearch } from "../NavigationSearch";
 
 interface Props {
   searchQuery: string;
@@ -28,13 +29,7 @@ export function NavigationSidebar({
   return (
     <div className="h-full flex flex-col bg-light-50 border-r">
       <div className="p-3">
-        <input
-          type="text"
-          placeholder="Search..."
-          value={searchQuery}
-          onChange={(e) => onSearchQueryChange(e.target.value)}
-          className="w-full px-2 py-1.5 text-sm rounded border border-gray-300 bg-white"
-        />
+        <NavigationSearch value={searchQuery} onChange={onSearchQueryChange} />
       </div>
 
       <div className="px-3 pb-3">
