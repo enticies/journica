@@ -8,6 +8,7 @@ interface Props {
   onSearchQueryChange: (value: string) => void;
   isRecording: boolean;
   onNewEntry: () => void;
+  totalEntries: number;
   journalNodes: FolderNode[];
   expandedIds: Set<string>;
   selectedFolderId: string | null;
@@ -20,6 +21,7 @@ export function NavigationSidebar({
   onSearchQueryChange,
   isRecording,
   onNewEntry,
+  totalEntries,
   journalNodes,
   expandedIds,
   selectedFolderId,
@@ -45,9 +47,14 @@ export function NavigationSidebar({
       </div>
 
       <div className="flex-1 overflow-y-auto px-3 pb-3">
-        <Typography variant="caption" className="uppercase tracking-wider text-gray-500 mb-2 block">
-          Journal
-        </Typography>
+        <div className="flex justify-between text-center pr-5">
+          <Typography variant="caption" className="uppercase font-normal leading-3.75 text-dark-30">
+            Journal
+          </Typography>
+          <Typography variant="caption" className="uppercase font-normal leading-3.75 text-dark-30">
+            {totalEntries}
+          </Typography>
+        </div>
         <JournalTree
           nodes={journalNodes}
           expandedIds={expandedIds}

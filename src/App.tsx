@@ -54,6 +54,7 @@ function App() {
             onSearchQueryChange={setFolderSearchQuery}
             isRecording={isRecording}
             onNewEntry={handleNewEntry}
+            totalEntries={totalEntries}
             journalNodes={journalNodes}
             expandedIds={expandedIds}
             selectedFolderId={selectedFolderId}

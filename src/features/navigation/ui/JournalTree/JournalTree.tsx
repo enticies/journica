@@ -72,7 +72,7 @@ export function JournalTree({
                 </span>
               )}
               {!canExpand && <span className="w-4" />}
-              <span className="truncate block w-full text-center text-[14px] font-normal leading-[19.5px] tracking-[-0.076px] text-dark-90">
+              <span style={{fontWeight: '400'}} className="truncate block w-full text-[18px] font-normal leading-[19.5px] tracking-[-0.076px] text-dark-90">
                 {label}
               </span>
             </button>
