@@ -35,13 +35,12 @@ export function NavigationSidebar({
       <div className="px-3 pb-3">
         <button
           onClick={onNewEntry}
-          className={`w-full px-3 py-2 text-sm font-semibold rounded transition-colors ${
-            isRecording
-              ? "bg-red-500 hover:bg-red-600 text-white"
-              : "bg-blue-500 hover:bg-blue-600 text-white"
-          }`}
+          className="mx-auto flex w-full items-center justify-center gap-1.5 rounded-[22px] bg-dark-90 px-3 py-2.25 text-sm font-semibold text-white transition-colors hover:opacity-90 cursor-pointer"
         >
-          {isRecording ? "Stop Recording" : "New Entry"}
+          <div className="flex gap-1.5 justify-center items-center font-normal text-[13px] tracking-[-0.076px]">
+            <span aria-hidden>+</span>
+            <span>{isRecording ? "Stop Recording" : "New Entry"}</span>
+          </div>
         </button>
       </div>
 

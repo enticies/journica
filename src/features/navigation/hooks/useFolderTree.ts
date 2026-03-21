@@ -55,31 +55,20 @@ function splitTree(nodes: FolderNode[]): {
   return { journalNodes, userNodes };
 }
 
-function todayKeys(): { year: string; month: string; day: string } {
+function todayKeys(): { year: string } {
   const now = new Date();
   return {
     year: String(now.getFullYear()).padStart(4, "0"),
-    month: String(now.getMonth() + 1).padStart(2, "0"),
-    day: String(now.getDate()).padStart(2, "0"),
   };
 }
 
 function defaultExpanded(journalNodes: FolderNode[]): Set<string> {
   const expanded = new Set<string>();
-  const { year, month, day } = todayKeys();
+  const { year } = todayKeys();
 
   const yearNode = journalNodes.find((n) => n.folder.name === year);
   if (!yearNode) return expanded;
   expanded.add(yearNode.folder.id);
-
-  const monthNode = yearNode.children.find((n) => n.folder.name === month);
-  if (!monthNode) return expanded;
-  expanded.add(monthNode.folder.id);
-
-  const dayNode = monthNode.children.find((n) => n.folder.name === day);
-  if (dayNode) {
-    expanded.add(dayNode.folder.id);
-  }
 
   return expanded;
 }

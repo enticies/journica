@@ -200,12 +200,19 @@ pub async fn query_entries(
 
     if trimmed_query.is_empty() {
         let sql = if folder_id.is_some() {
-            "SELECT e.id, e.folder_id, e.storage_path, e.display_name, e.created_at, e.duration_seconds,
+            "WITH RECURSIVE folder_scope(id) AS (
+                 SELECT ?
+                 UNION ALL
+                 SELECT f.id
+                 FROM folders f
+                 JOIN folder_scope fs ON f.parent_id = fs.id
+             )
+             SELECT e.id, e.folder_id, e.storage_path, e.display_name, e.created_at, e.duration_seconds,
                     COALESCE(o.text, (SELECT group_concat(text, ' ') FROM (SELECT text FROM transcript_segments WHERE entry_id = e.id ORDER BY segment_index))) AS transcript,
                     e.title
              FROM entries e
              LEFT JOIN transcript_overrides o ON o.entry_id = e.id
-             WHERE e.folder_id = ?
+             WHERE e.folder_id IN (SELECT id FROM folder_scope)
              ORDER BY e.created_at DESC
              LIMIT ? OFFSET ?"
         } else {
@@ -245,7 +252,18 @@ pub async fn query_entries(
     );
 
     if folder_id.is_some() {
-        sql.push_str("e.folder_id = ? AND ");
+        sql.push_str(
+            "e.folder_id IN (
+                WITH RECURSIVE folder_scope(id) AS (
+                    SELECT ?
+                    UNION ALL
+                    SELECT f.id
+                    FROM folders f
+                    JOIN folder_scope fs ON f.parent_id = fs.id
+                )
+                SELECT id FROM folder_scope
+            ) AND ",
+        );
     }
 
     for (index, _) in terms.iter().enumerate() {

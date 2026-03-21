@@ -15,7 +15,7 @@ export function NavigationSearch({ value, onChange, placeholder = "Search" }: Pr
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="min-w-0 flex-1 bg-transparent font-sans text-[14px] font-normal leading-5 tracking-[-0.076px] text-[#B8B4A5] outline-none placeholder:text-[#B8B4A5]"
+        className="min-w-0 flex-1 bg-transparent font-sans text-[14px] font-normal leading-5 tracking-[-0.076px] outline-none text-dark-20 placeholder:text-dark-20"
       />
     </label>
   );

@@ -48,6 +48,7 @@ export function JournalTree({
         const isExpanded = expandedIds.has(node.folder.id);
         const isSelected = selectedFolderId === node.folder.id;
         const hasChildren = node.children.length > 0;
+        const canExpand = hasChildren && depth === 0;
         const label = formatNodeLabel(node.folder.name, depth);
 
         return (
@@ -59,21 +60,23 @@ export function JournalTree({
                   : "hover:bg-light-50"
               }`}
               onClick={() => {
-                if (hasChildren) {
+                if (canExpand) {
                   onToggleExpanded(node.folder.id);
                 }
                 onSelectFolder(node.folder.id);
               }}
             >
-              {hasChildren && (
+              {canExpand && (
                 <span className="w-4 h-4 flex items-center justify-center select-none">
                   <ChevronRightIcon expanded={isExpanded} />
                 </span>
               )}
-              {!hasChildren && <span className="w-4" />}
-              <span className="truncate">{label}</span>
+              {!canExpand && <span className="w-4" />}
+              <span className="truncate block w-full text-center text-[14px] font-normal leading-[19.5px] tracking-[-0.076px] text-dark-90">
+                {label}
+              </span>
             </button>
-            {isExpanded && hasChildren && (
+            {isExpanded && canExpand && (
               <JournalTree
                 nodes={node.children}
                 expandedIds={expandedIds}
