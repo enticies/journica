@@ -1,5 +1,8 @@
+import { useCallback } from "react";
 import { Typography } from "../../../../shared/ui/Typography";
+import { TreeView, TreeNodeRenderOpts } from "../../../../shared/ui/TreeView";
 import { FolderNode } from "../../hooks/useFolderTree";
+import { Folder } from "../../../recordings/model/types";
 import { ChevronRightIcon } from "../icons/ChevronRightIcon";
 
 interface Props {
@@ -8,7 +11,6 @@ interface Props {
   selectedFolderId: string | null;
   onToggleExpanded: (folderId: string) => void;
   onSelectFolder: (folderId: string) => void;
-  depth?: number;
 }
 
 const MONTH_LABELS: Record<string, string> = {
@@ -33,71 +35,68 @@ function formatNodeLabel(name: string, depth: number): string {
   return name;
 }
 
+function canExpand(node: FolderNode, depth: number): boolean {
+  return node.children.length > 0 && depth === 0;
+}
+
 export function JournalTree({
   nodes,
   expandedIds,
   selectedFolderId,
   onToggleExpanded,
   onSelectFolder,
-  depth = 0,
 }: Props) {
-  if (nodes.length === 0) return null;
+  const renderNode = useCallback(
+    ({ node, depth, isExpanded, hasChildren, toggle }: TreeNodeRenderOpts<Folder>) => {
+      const isSelected = selectedFolderId === node.id;
+      const expandable = hasChildren && depth === 0;
+      const label = formatNodeLabel(node.data.name, depth);
+      const showEntryCount = depth === 1;
+
+      return (
+        <button
+          className={`w-full text-left px-2 py-1 text-sm rounded flex items-center gap-1 ${
+            isSelected
+              ? "bg-light-50 font-semibold"
+              : "hover:bg-light-50"
+          }`}
+          onClick={() => {
+            if (expandable) {
+              toggle();
+            }
+            onSelectFolder(node.id);
+          }}
+        >
+          {expandable && (
+            <span className="w-4 h-4 flex items-center justify-center select-none">
+              <ChevronRightIcon expanded={isExpanded} />
+            </span>
+          )}
+          {!expandable && <span className="w-4" />}
+          <span className="flex w-full items-center justify-between gap-2">
+            <span style={{ fontWeight: "400" }} className="truncate block text-[18px] font-normal leading-[19.5px] tracking-[-0.076px] text-dark-90">
+              {label}
+            </span>
+            {showEntryCount && (
+              <Typography variant="caption" className="uppercase font-normal leading-3.75 text-dark-30">
+                {node.data.entry_count}
+              </Typography>
+            )}
+          </span>
+        </button>
+      );
+    },
+    [selectedFolderId, onSelectFolder],
+  );
 
   return (
-    <ul className={depth === 0 ? "" : "ml-3"}>
-      {nodes.map((node) => {
-        const isExpanded = expandedIds.has(node.folder.id);
-        const isSelected = selectedFolderId === node.folder.id;
-        const hasChildren = node.children.length > 0;
-        const canExpand = hasChildren && depth === 0;
-        const label = formatNodeLabel(node.folder.name, depth);
-        const showEntryCount = depth === 1;
-
-        return (
-          <li key={node.folder.id}>
-            <button
-              className={`w-full text-left px-2 py-1 text-sm rounded flex items-center gap-1 ${
-                isSelected
-                  ? "bg-light-50 font-semibold"
-                  : "hover:bg-light-50"
-              }`}
-              onClick={() => {
-                if (canExpand) {
-                  onToggleExpanded(node.folder.id);
-                }
-                onSelectFolder(node.folder.id);
-              }}
-            >
-              {canExpand && (
-                <span className="w-4 h-4 flex items-center justify-center select-none">
-                  <ChevronRightIcon expanded={isExpanded} />
-                </span>
-              )}
-              {!canExpand && <span className="w-4" />}
-              <span className="flex w-full items-center justify-between gap-2">
-                <span style={{ fontWeight: "400" }} className="truncate block text-[18px] font-normal leading-[19.5px] tracking-[-0.076px] text-dark-90">
-                  {label}
-                </span>
-                {showEntryCount && (
-                  <Typography variant="caption" className="uppercase font-normal leading-3.75 text-dark-30">
-                    {node.folder.entry_count}
-                  </Typography>
-                )}
-              </span>
-            </button>
-            {isExpanded && canExpand && (
-              <JournalTree
-                nodes={node.children}
-                expandedIds={expandedIds}
-                selectedFolderId={selectedFolderId}
-                onToggleExpanded={onToggleExpanded}
-                onSelectFolder={onSelectFolder}
-                depth={depth + 1}
-              />
-            )}
-          </li>
-        );
-      })}
-    </ul>
+    <TreeView<Folder>
+      nodes={nodes}
+      expandedIds={expandedIds}
+      onToggleExpanded={onToggleExpanded}
+      renderNode={renderNode}
+      canExpand={canExpand}
+      childClassName="ml-3"
+    />
   );
 }

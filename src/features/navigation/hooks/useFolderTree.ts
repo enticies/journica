@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { listFolders } from "../../recordings/api/recordingsApi";
 import { Folder } from "../../recordings/model/types";
+import { TreeNode } from "../../../shared/ui/TreeView";
 
-export interface FolderNode {
-  folder: Folder;
-  children: FolderNode[];
-}
+export type FolderNode = TreeNode<Folder>;
 
 function buildTree(folders: Folder[]): FolderNode[] {
   const byParent = new Map<string, Folder[]>();
@@ -20,7 +18,8 @@ function buildTree(folders: Folder[]): FolderNode[] {
   function buildChildren(parentId: string): FolderNode[] {
     const children = byParent.get(parentId) ?? [];
     return children.map((folder) => ({
-      folder,
+      id: folder.id,
+      data: folder,
       children: buildChildren(folder.id),
     }));
   }
@@ -43,14 +42,14 @@ function splitTree(nodes: FolderNode[]): {
   const userNodes: FolderNode[] = [];
 
   for (const node of nodes) {
-    if (isDateName(node.folder.name)) {
+    if (isDateName(node.data.name)) {
       journalNodes.push(node);
     } else {
       userNodes.push(node);
     }
   }
 
-  journalNodes.sort((a, b) => b.folder.name.localeCompare(a.folder.name));
+  journalNodes.sort((a, b) => b.data.name.localeCompare(a.data.name));
 
   return { journalNodes, userNodes };
 }
@@ -66,9 +65,9 @@ function defaultExpanded(journalNodes: FolderNode[]): Set<string> {
   const expanded = new Set<string>();
   const { year } = todayKeys();
 
-  const yearNode = journalNodes.find((n) => n.folder.name === year);
+  const yearNode = journalNodes.find((n) => n.data.name === year);
   if (!yearNode) return expanded;
-  expanded.add(yearNode.folder.id);
+  expanded.add(yearNode.id);
 
   return expanded;
 }
