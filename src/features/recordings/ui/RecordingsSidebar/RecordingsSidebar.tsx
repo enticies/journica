@@ -3,7 +3,6 @@ import { Typography } from "../../../../shared/ui/Typography";
 import { EntryList } from "../EntryList";
 import { EntryTagEditor } from "../EntryTagEditor";
 import { RecordingsSearch } from "../RecordingsSearch";
-import { TagManager } from "../TagManager";
 import { useRecordingsSidebar } from "./useRecordingsSidebar";
 
 interface Props {
@@ -13,17 +12,13 @@ interface Props {
   selectedEntry: Entry | null;
   selectedEntryId: string | null;
   searchQuery: string;
-  selectedFilterTagIds: string[];
   loading: boolean;
   loadingMore: boolean;
   hasMore: boolean;
   onDeleteEntry: (id: string) => Promise<void>;
-  onCreateTag: (name: string) => Promise<Tag>;
-  onDeleteTag: (tagId: string) => Promise<void>;
   onSetEntryTags: (entryId: string, tagIds: string[]) => Promise<void>;
   onSelectEntry: (id: string) => void;
   onSearchQueryChange: (value: string) => void;
-  onSelectedFilterTagIdsChange: (tagIds: string[]) => void;
   onLoadMore: () => void;
 }
 
@@ -34,17 +29,13 @@ export function RecordingsSidebar({
   selectedEntry,
   selectedEntryId,
   searchQuery,
-  selectedFilterTagIds,
   loading,
   loadingMore,
   hasMore,
   onDeleteEntry,
-  onCreateTag,
-  onDeleteTag,
   onSetEntryTags,
   onSelectEntry,
   onSearchQueryChange,
-  onSelectedFilterTagIdsChange,
   onLoadMore,
 }: Props) {
   const {
@@ -77,14 +68,6 @@ export function RecordingsSidebar({
             {errorMessage}
           </Typography>
         )}
-        <TagManager
-          tags={tags}
-          selectedFilterTagIds={selectedFilterTagIds}
-          onSelectedFilterTagIdsChange={onSelectedFilterTagIdsChange}
-          onCreateTag={onCreateTag}
-          onDeleteTag={onDeleteTag}
-          onError={setErrorMessage}
-        />
         <EntryTagEditor
           selectedEntry={selectedEntry}
           tags={tags}

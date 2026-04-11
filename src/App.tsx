@@ -29,14 +29,17 @@ function App() {
             onSearchQueryChange={setFolderSearchQuery}
             isRecording={isRecording}
             onNewEntry={onNewEntry}
-            totalEntries={recordingsPanel.totalEntries}
             journalNodes={journalNodes}
             userNodes={userNodes}
             expandedIds={expandedIds}
             selectedFolderId={selectedFolderId}
+            tags={recordingsPanel.tags}
+            selectedFilterTagIds={recordingsPanel.selectedFilterTagIds}
             onToggleExpanded={toggleExpanded}
             onSelectFolder={setSelectedFolderId}
+            onSelectedFilterTagIdsChange={recordingsPanel.setSelectedFilterTagIds}
             onCreateFolder={onCreateFolder}
+            onCreateTag={recordingsPanel.createTag}
           />
         </aside>
 
@@ -48,17 +51,13 @@ function App() {
             selectedEntry={recordingsPanel.selectedEntry}
             selectedEntryId={recordingsPanel.selectedEntryId}
             searchQuery={recordingsPanel.searchQuery}
-            selectedFilterTagIds={recordingsPanel.selectedFilterTagIds}
             loading={recordingsPanel.loading}
             loadingMore={recordingsPanel.loadingMore}
             hasMore={recordingsPanel.hasMore}
             onDeleteEntry={onDeleteEntry}
-            onCreateTag={recordingsPanel.createTag}
-            onDeleteTag={recordingsPanel.deleteTag}
             onSetEntryTags={recordingsPanel.setEntryTags}
             onSelectEntry={recordingsPanel.setSelectedEntryId}
             onSearchQueryChange={recordingsPanel.setSearchQuery}
-            onSelectedFilterTagIdsChange={recordingsPanel.setSelectedFilterTagIds}
             onLoadMore={onLoadMore}
           />
         </div>

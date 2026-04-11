@@ -8,6 +8,9 @@ interface Props {
   isSaving: boolean;
   canSave: boolean;
   errorMessage: string | null;
+  title?: string;
+  ariaLabel?: string;
+  placeholder?: string;
   onValueChange: (value: string) => void;
   onInputKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
   onClose: () => void;
@@ -20,6 +23,9 @@ export function NewFolderModal({
   isSaving,
   canSave,
   errorMessage,
+  title = "New Folder",
+  ariaLabel = "New folder",
+  placeholder = "Folder name",
   onValueChange,
   onInputKeyDown,
   onClose,
@@ -46,12 +52,12 @@ export function NewFolderModal({
   );
 
   return (
-    <Modal isOpen={isOpen} title="New Folder" onClose={onClose} footer={footer} ariaLabel="New folder">
+    <Modal isOpen={isOpen} title={title} onClose={onClose} footer={footer} ariaLabel={ariaLabel}>
       <Input
         value={value}
         onChange={onValueChange}
         onKeyDown={onInputKeyDown}
-        placeholder="Folder name"
+        placeholder={placeholder}
         autoFocus
         className="h-auto w-full gap-0 rounded-lg px-3 py-2"
         inputClassName="text-dark-90"

@@ -1,6 +1,9 @@
 import { Typography } from "../../../../shared/ui/Typography";
+import { Tag } from "../../../recordings/model/types";
+import { TagManager } from "../../../recordings/ui/TagManager";
 import { FolderNode } from "../../hooks/useFolderTree";
 import { useNavigationSidebar } from "../../hooks/useNavigationSidebar";
+import { useNewTagModal } from "../../hooks/useNewTagModal";
 import { JournalTree } from "../JournalTree";
 import { NewFolderModal } from "../NewFolderModal";
 import { NavigationSearch } from "../NavigationSearch";
@@ -12,14 +15,17 @@ interface Props {
   onSearchQueryChange: (value: string) => void;
   isRecording: boolean;
   onNewEntry: () => void;
-  totalEntries: number;
   journalNodes: FolderNode[];
   userNodes: FolderNode[];
   expandedIds: Set<string>;
   selectedFolderId: string | null;
+  tags: Tag[];
+  selectedFilterTagIds: string[];
   onToggleExpanded: (folderId: string) => void;
   onSelectFolder: (folderId: string) => void;
+  onSelectedFilterTagIdsChange: (tagIds: string[]) => void;
   onCreateFolder: (name: string) => Promise<void>;
+  onCreateTag: (name: string) => Promise<Tag>;
 }
 
 export function NavigationSidebar({
@@ -27,15 +33,19 @@ export function NavigationSidebar({
   onSearchQueryChange,
   isRecording,
   onNewEntry,
-  totalEntries,
   journalNodes,
   userNodes,
   expandedIds,
   selectedFolderId,
+  tags,
+  selectedFilterTagIds,
   onToggleExpanded,
   onSelectFolder,
+  onSelectedFilterTagIdsChange,
   onCreateFolder,
+  onCreateTag,
 }: Props) {
+  const newTagModal = useNewTagModal({ onCreateTag });
   const { newFolderModal, flatUserNodes, onSelectUserFolder, isUserFolderSelected } = useNavigationSidebar({
     selectedFolderId,
     userNodes,
@@ -118,6 +128,20 @@ export function NavigationSidebar({
             );
           })}
         </ul>
+
+        <hr className="my-3 border-light-base" />
+
+        <div className="[&>*]:text-[15px] flex justify-between text-center">
+          <Typography variant="caption" className="uppercase font-normal leading-3.75 text-dark-30">
+            Tags
+          </Typography>
+          <PlusIcon className="cursor-pointer text-dark-30" onClick={newTagModal.open} />
+        </div>
+        <TagManager
+          tags={tags}
+          selectedFilterTagIds={selectedFilterTagIds}
+          onSelectedFilterTagIdsChange={onSelectedFilterTagIdsChange}
+        />
       </div>
 
       <NewFolderModal
@@ -131,6 +155,23 @@ export function NavigationSidebar({
         onClose={newFolderModal.close}
         onSave={() => {
           void newFolderModal.save();
+        }}
+      />
+
+      <NewFolderModal
+        isOpen={newTagModal.isOpen}
+        value={newTagModal.name}
+        isSaving={newTagModal.isSaving}
+        canSave={newTagModal.canSave}
+        errorMessage={newTagModal.errorMessage}
+        title="New Tag"
+        ariaLabel="New tag"
+        placeholder="Tag name"
+        onValueChange={newTagModal.handleNameChange}
+        onInputKeyDown={newTagModal.handleInputKeyDown}
+        onClose={newTagModal.close}
+        onSave={() => {
+          void newTagModal.save();
         }}
       />
     </div>
