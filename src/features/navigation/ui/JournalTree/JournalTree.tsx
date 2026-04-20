@@ -58,6 +58,7 @@ export function JournalTree({
         <SidebarListItem
           className="px-2"
           selected={isSelected}
+          selectedClassName="bg-light-80 font-semibold hover:bg-light-80"
           onClick={() => {
             if (expandable) {
               toggle();

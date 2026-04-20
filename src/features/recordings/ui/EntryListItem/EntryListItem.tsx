@@ -1,5 +1,7 @@
 import { Entry } from "../../model/types";
 import { SidebarListItem } from "../../../../shared/ui/SidebarListItem";
+import { Typography } from "../../../../shared/ui/Typography";
+import playIcon from "./play.svg";
 import { useEntryListItem } from "./useEntryListItem";
 
 interface Props {
@@ -19,63 +21,64 @@ export function EntryListItem({
   progress,
   onSelect,
   onPlay,
-  onDelete,
+  onDelete: _onDelete,
 }: Props) {
-  const { displayTitle, createdAtLabel, durationLabel } = useEntryListItem({ entry });
+  const { createdAtLabel, durationLabel, transcriptPreview } = useEntryListItem({ entry });
 
   return (
     <SidebarListItem
       asListItem
       element="div"
-      className="p-2"
+      className="px-[12px] py-0 rounded-[6px]"
       selected={selected}
-      selectedClassName="bg-blue-100 ring-1 ring-blue-300 hover:bg-blue-100"
-      unselectedClassName="bg-light-50 hover:bg-light-80"
+      selectedClassName="bg-transparent hover:bg-light-80"
+      unselectedClassName="bg-transparent hover:bg-light-80"
       unstyledLabel
-      contentClassName="items-start"
-      onClick={() => onSelect(entry.id)}
+      onClick={() => {
+        onSelect(entry.id);
+        onPlay(entry);
+      }}
       label={
-        <div className="flex-1 min-w-0">
-          <div className="font-mono text-sm truncate">{displayTitle}</div>
-          <div className="text-xs text-gray-500">
-            {createdAtLabel}
-            <br />
-            {entry.duration_seconds !== null && <span className="ml-2">{durationLabel}</span>}
-          </div>
-          {entry.tags.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1">
-              {entry.tags.map((tag) => (
-                <span key={tag.id} className="px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-800">
-                  {tag.name}
-                </span>
-              ))}
+        <div className="w-full min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-1.5">
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onSelect(entry.id);
+                  onPlay(entry);
+                }}
+                className={`inline-flex h-7 aspect-square items-center justify-center rounded-[50px] border border-dark-20 p-2 transition-colors ${playing ? "bg-light-80" : "hover:bg-light-80"}`}
+                aria-label={playing ? "Stop playback" : "Play recording"}
+                title={playing ? "Stop" : "Play"}
+              >
+                <img src={playIcon} alt="" aria-hidden="true" className="h-3 w-auto" />
+              </button>
+              <span className="truncate block text-[14px] font-medium leading-5 text-dark-90">
+                {createdAtLabel}
+              </span>
             </div>
+            <span className="text-[12px] font-normal leading-[18px] text-dark-30">
+              {durationLabel || "0s"}
+            </span>
+          </div>
+          <p className="mt-2 text-[13px] leading-5 text-dark-60">{transcriptPreview}</p>
+          {progress !== undefined && (
+            <Typography variant="caption" className="mt-2 block text-dark-30">
+              Transcribing: {progress}%
+            </Typography>
           )}
-          {progress !== undefined && <span>Transcribing: {progress}%</span>}
-        </div>
-      }
-      trailing={
-        <div className="flex gap-1 ml-2">
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              onPlay(entry);
-            }}
-            className="px-2 py-1 text-blue-500 hover:bg-blue-100 rounded"
-          >
-            {playing ? "Stop" : "Play"}
-          </button>
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              onDelete(entry.id);
-            }}
-            className="px-2 py-1 text-red-500 hover:bg-red-100 rounded"
-          >
-            Delete
-          </button>
+          <div className="mt-3 flex flex-wrap items-center gap-1">
+            {entry.tags.map((tag) => (
+              <span
+                key={tag.id}
+                className="rounded-md border border-light-base bg-light-20 px-2 py-0.5 text-xs font-medium text-dark-70"
+              >
+                {tag.name}
+              </span>
+            ))}
+          </div>
         </div>
       }
     />

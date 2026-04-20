@@ -43,21 +43,16 @@ function App() {
           />
         </aside>
 
-        <div className="min-h-40 border-r md:min-w-72 md:basis-1/4">
+        <div className="min-h-40 border-r border-light-base bg-light-50 md:min-w-72 md:basis-1/4">
           <RecordingsSidebar
             entries={recordingsPanel.entries}
-            totalEntries={recordingsPanel.totalEntries}
-            tags={recordingsPanel.tags}
-            selectedEntry={recordingsPanel.selectedEntry}
             selectedEntryId={recordingsPanel.selectedEntryId}
             searchQuery={recordingsPanel.searchQuery}
             loading={recordingsPanel.loading}
             loadingMore={recordingsPanel.loadingMore}
             hasMore={recordingsPanel.hasMore}
             onDeleteEntry={onDeleteEntry}
-            onSetEntryTags={recordingsPanel.setEntryTags}
             onSelectEntry={recordingsPanel.setSelectedEntryId}
-            onSearchQueryChange={recordingsPanel.setSearchQuery}
             onLoadMore={onLoadMore}
           />
         </div>

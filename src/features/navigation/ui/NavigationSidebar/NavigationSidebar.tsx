@@ -55,7 +55,7 @@ export function NavigationSidebar({
   });
 
   return (
-    <div className="h-full flex flex-col bg-light-50 border-r">
+    <div className="h-full flex flex-col bg-light-50 border-r border-light-base">
       <div className="p-3">
         <NavigationSearch value={searchQuery} onChange={onSearchQueryChange} />
       </div>
@@ -106,6 +106,7 @@ export function NavigationSidebar({
                 icon={<FolderIcon />}
                 label={node.data.name}
                 selected={isSelected}
+                selectedClassName="bg-light-80 font-semibold hover:bg-light-80"
                 onClick={() => {
                   onSelectUserFolder(node.id);
                 }}
