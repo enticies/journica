@@ -17,7 +17,13 @@ export function useAppController() {
     reloadFolders,
   } = useFolderTree();
 
-  const { isRecording, toggleRecording } = useRecordingSession(() => {
+  const {
+    isRecording,
+    isPaused: isRecordingPaused,
+    durationSeconds: recordingDurationSeconds,
+    toggleRecording,
+    stopCurrentRecording,
+  } = useRecordingSession(() => {
     void reloadFolders();
   });
 
@@ -26,6 +32,12 @@ export function useAppController() {
   const onNewEntry = useCallback(() => {
     void toggleRecording();
   }, [toggleRecording]);
+
+  const onStopEntry = useCallback(() => {
+    if (isRecording) {
+      void stopCurrentRecording();
+    }
+  }, [isRecording, stopCurrentRecording]);
 
   const onCreateFolder = useCallback(
     async (name: string) => {
@@ -58,7 +70,10 @@ export function useAppController() {
     selectedFolderId,
     setSelectedFolderId,
     isRecording,
+    isRecordingPaused,
+    recordingDurationSeconds,
     onNewEntry,
+    onStopEntry,
     onCreateFolder,
     onDeleteEntry,
     onLoadMore,

@@ -12,6 +12,8 @@ type SharedWriter = Arc<Mutex<Option<WavWriter<BufWriter<File>>>>>;
 
 pub enum AudioCommand {
     Start { file_path: PathBuf },
+    Pause,
+    Resume,
     Stop { response_tx: Sender<Option<f64>> },
 }
 
@@ -98,6 +100,16 @@ pub fn spawn_audio_thread(rx: Receiver<AudioCommand>) {
                     {
                         _stream = Some(new_stream);
                         writer = Some(new_writer);
+                    }
+                }
+                Ok(AudioCommand::Pause) => {
+                    if let Some(stream) = _stream.as_ref() {
+                        stream.pause().ok();
+                    }
+                }
+                Ok(AudioCommand::Resume) => {
+                    if let Some(stream) = _stream.as_ref() {
+                        stream.play().ok();
                     }
                 }
                 Ok(AudioCommand::Stop { response_tx }) => {

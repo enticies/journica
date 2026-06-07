@@ -42,7 +42,7 @@ export function ScriptPanel({ selectedEntry, tags, searchQuery, scriptMessage, o
   }
 
   return (
-    <section className="flex-1 overflow-y-auto bg-light-50 p-6">
+    <section className="flex-1 overflow-y-auto bg-light-50 px-6 py-8">
       <audio
         ref={audioRef}
         onEnded={handleEnded}
@@ -54,7 +54,7 @@ export function ScriptPanel({ selectedEntry, tags, searchQuery, scriptMessage, o
       <div className="flex w-full max-w-3xl flex-col gap-6">
         <header className="space-y-5">
           <div>
-            <h1 className="mt-1 text-base font-medium text-dark-90">{createdAtLabel}</h1>
+            <h1 className="text-base font-medium text-dark-90">{createdAtLabel}</h1>
           </div>
 
           <div className="flex flex-wrap items-center gap-10 text-sm">

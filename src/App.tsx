@@ -13,7 +13,10 @@ function App() {
     selectedFolderId,
     setSelectedFolderId,
     isRecording,
+    isRecordingPaused,
+    recordingDurationSeconds,
     onNewEntry,
+    onStopEntry,
     onCreateFolder,
     onDeleteEntry,
     onLoadMore,
@@ -28,7 +31,10 @@ function App() {
             searchQuery={folderSearchQuery}
             onSearchQueryChange={setFolderSearchQuery}
             isRecording={isRecording}
+            isRecordingPaused={isRecordingPaused}
+            recordingDurationSeconds={recordingDurationSeconds}
             onNewEntry={onNewEntry}
+            onStopEntry={onStopEntry}
             journalNodes={journalNodes}
             userNodes={userNodes}
             expandedIds={expandedIds}

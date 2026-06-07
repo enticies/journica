@@ -123,6 +123,34 @@ pub fn start_recording(
 }
 
 #[tauri::command]
+pub fn pause_recording(state: tauri::State<Mutex<AppState>>) -> Result<(), String> {
+    let state = state.lock().unwrap();
+
+    if state.current_recording.is_none() {
+        return Err("No active recording to pause.".to_string());
+    }
+
+    state
+        .command_tx
+        .send(AudioCommand::Pause)
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn resume_recording(state: tauri::State<Mutex<AppState>>) -> Result<(), String> {
+    let state = state.lock().unwrap();
+
+    if state.current_recording.is_none() {
+        return Err("No active recording to resume.".to_string());
+    }
+
+    state
+        .command_tx
+        .send(AudioCommand::Resume)
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 pub async fn stop_recording(
     app: tauri::AppHandle,
     state: tauri::State<'_, Mutex<AppState>>,

@@ -40,6 +40,8 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             features::recorder::commands::start_recording,
+            features::recorder::commands::pause_recording,
+            features::recorder::commands::resume_recording,
             features::recorder::commands::stop_recording,
             features::recordings::commands::get_entries,
             features::recordings::commands::query_entries,

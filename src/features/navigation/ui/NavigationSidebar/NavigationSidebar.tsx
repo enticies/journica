@@ -9,13 +9,19 @@ import { JournalTree } from "../JournalTree";
 import { NewFolderModal } from "../NewFolderModal";
 import { NavigationSearch } from "../NavigationSearch";
 import { FolderIcon } from "../icons/FolderIcon";
+import { PauseIcon } from "../icons/PauseIcon";
+import { PlayIcon } from "../icons/PlayIcon";
 import { PlusIcon } from "../icons/PlusIcon";
+import { StopIcon } from "../icons/StopIcon";
 
 interface Props {
   searchQuery: string;
   onSearchQueryChange: (value: string) => void;
   isRecording: boolean;
+  isRecordingPaused: boolean;
+  recordingDurationSeconds: number;
   onNewEntry: () => void;
+  onStopEntry: () => void;
   journalNodes: FolderNode[];
   userNodes: FolderNode[];
   expandedIds: Set<string>;
@@ -33,7 +39,10 @@ export function NavigationSidebar({
   searchQuery,
   onSearchQueryChange,
   isRecording,
+  isRecordingPaused,
+  recordingDurationSeconds,
   onNewEntry,
+  onStopEntry,
   journalNodes,
   userNodes,
   expandedIds,
@@ -54,22 +63,44 @@ export function NavigationSidebar({
     onCreateFolder,
   });
 
+  const minutes = String(Math.floor(recordingDurationSeconds / 60)).padStart(2, "0");
+  const seconds = String(recordingDurationSeconds % 60).padStart(2, "0");
+
   return (
     <div className="h-full flex flex-col bg-light-50 border-r border-light-base">
-      <div className="p-3">
-        <NavigationSearch value={searchQuery} onChange={onSearchQueryChange} />
+
+
+      <div className="px-3 pb-3 pt-8">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onNewEntry}
+            aria-label={!isRecording ? "Start recording" : isRecordingPaused ? "Resume recording" : "Pause recording"}
+            title={!isRecording ? "Start" : isRecordingPaused ? "Resume" : "Pause"}
+            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-dark-90 text-white transition-colors hover:bg-dark-70"
+          >
+            {isRecording && !isRecordingPaused ? <PauseIcon className="size-4" /> : <PlayIcon className="size-4" />}
+          </button>
+
+
+
+          <button
+            onClick={onStopEntry}
+            disabled={!isRecording}
+            aria-label="Stop recording"
+            title="Stop recording"
+            className="flex size-10 shrink-0 items-center justify-center rounded-full border border-dark-20 text-dark-70 transition-colors hover:bg-light-30 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <StopIcon className="size-4" />
+          </button>
+
+          <span className="flex h-10 w-fit min-w-18 items-center justify-center rounded-full border border-light-base bg-light-20 px-3 font-mono text-sm font-semibold tabular-nums text-dark-80">
+            {minutes}:{seconds}
+          </span>
+        </div>
       </div>
 
-      <div className="px-3 pb-3">
-        <button
-          onClick={onNewEntry}
-          className="mx-auto flex w-full items-center justify-center gap-1.5 rounded-[22px] bg-dark-90 px-3 py-2.25 text-sm font-semibold text-white transition-colors hover:opacity-90 cursor-pointer"
-        >
-          <div className="flex gap-1.5 justify-center items-center font-normal text-[13px] tracking-[-0.076px]">
-            <span aria-hidden>+</span>
-            <span>{isRecording ? "Stop Recording" : "New Entry"}</span>
-          </div>
-        </button>
+      <div className="p-3">
+        <NavigationSearch value={searchQuery} onChange={onSearchQueryChange} />
       </div>
 
       <div className="flex-1 overflow-y-auto px-3 pb-3">
