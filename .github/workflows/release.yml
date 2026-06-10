@@ -10,6 +10,9 @@ jobs:
   release:
     permissions:
       contents: write
+    env:
+      MACOSX_DEPLOYMENT_TARGET: "10.15"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "10.15"
 
     strategy:
       fail-fast: false
