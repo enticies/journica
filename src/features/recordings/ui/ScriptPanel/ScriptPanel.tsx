@@ -1,6 +1,7 @@
 import { Entry, Tag } from "../../model/types";
+import { useAudioPlayer } from "../../hooks/useAudioPlayer";
 import playIcon from "../EntryListItem/play.svg";
-import { CheckIcon, TagIcon } from "../icons";
+import { CheckIcon, PauseIcon, TagIcon } from "../icons";
 import { TranscriptView } from "../TranscriptView";
 import { useScriptPanel } from "./useScriptPanel";
 
@@ -10,9 +11,10 @@ interface Props {
   searchQuery: string;
   scriptMessage: string | null;
   onSetEntryTags: (entryId: string, tagIds: string[]) => Promise<void>;
+  audioPlayer: ReturnType<typeof useAudioPlayer>;
 }
 
-export function ScriptPanel({ selectedEntry, tags, searchQuery, scriptMessage, onSetEntryTags }: Props) {
+export function ScriptPanel({ selectedEntry, tags, searchQuery, scriptMessage, onSetEntryTags, audioPlayer }: Props) {
   const {
     transcript,
     createdAtLabel,
@@ -23,16 +25,12 @@ export function ScriptPanel({ selectedEntry, tags, searchQuery, scriptMessage, o
     errorMessage,
     isPlaying,
     progressPercent,
-    audioRef,
     handlePlay,
-    handleEnded,
-    handleLoadedMetadata,
-    handleTimeUpdate,
     handleToggleTag,
     openTags,
     cancelTags,
     saveTags,
-  } = useScriptPanel({ selectedEntry, onSetEntryTags });
+  } = useScriptPanel({ selectedEntry, onSetEntryTags, audioPlayer });
 
   if (!selectedEntry) {
     return (
@@ -44,14 +42,6 @@ export function ScriptPanel({ selectedEntry, tags, searchQuery, scriptMessage, o
 
   return (
     <section className="flex-1 overflow-y-auto bg-light-50 px-6 py-8">
-      <audio
-        ref={audioRef}
-        onEnded={handleEnded}
-        onLoadedMetadata={handleLoadedMetadata}
-        onTimeUpdate={handleTimeUpdate}
-        className="hidden"
-      />
-
       <div className="flex w-full flex-col gap-6">
         <header className="space-y-5">
           <div>
@@ -136,7 +126,7 @@ export function ScriptPanel({ selectedEntry, tags, searchQuery, scriptMessage, o
               title={isPlaying ? "Stop" : "Play"}
               className={`mr-2 inline-flex size-10 items-center justify-center rounded-full border border-dark-20 p-2 transition-colors ${isPlaying ? "bg-light-80" : "hover:bg-light-80"}`}
             >
-              <img src={playIcon} alt="" aria-hidden="true" className="h-4 w-auto" />
+              {isPlaying ? <PauseIcon className="size-4 text-dark-80" /> : <img src={playIcon} alt="" aria-hidden="true" className="h-4 w-auto" />}
             </button>
             <button
               type="button"

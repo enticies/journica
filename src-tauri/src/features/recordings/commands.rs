@@ -457,15 +457,22 @@ pub async fn delete_entry(
     if let Some(entry) = entry {
         let file_path = paths::recordings_dir(&app)?.join(&entry.storage_path);
 
-        if file_path.exists() {
-            std::fs::remove_file(&file_path).map_err(|e| e.to_string())?;
-        }
-
         sqlx::query("DELETE FROM entries WHERE id = ?")
             .bind(&id)
             .execute(pool.inner())
             .await
             .map_err(|e| e.to_string())?;
+
+        if file_path.exists() {
+            if let Err(error) = std::fs::remove_file(&file_path) {
+                eprintln!(
+                    "Deleted entry {} but failed to remove audio file '{}': {}",
+                    id,
+                    file_path.display(),
+                    error
+                );
+            }
+        }
 
         println!("Deleted entry: {}", id);
     }

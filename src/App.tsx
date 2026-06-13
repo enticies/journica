@@ -109,16 +109,25 @@ function MainApp() {
             onDeleteEntry={onDeleteEntry}
             onSelectEntry={recordingsPanel.setSelectedEntryId}
             onLoadMore={onLoadMore}
+            audioPlayer={recordingsPanel.audioPlayer}
           />
         </div>
 
         <main className="flex min-h-0 min-w-0 overflow-hidden md:basis-[60%]">
+          <audio
+            ref={recordingsPanel.audioPlayer.audioRef}
+            onEnded={recordingsPanel.audioPlayer.handleEnded}
+            onLoadedMetadata={recordingsPanel.audioPlayer.handleLoadedMetadata}
+            onTimeUpdate={recordingsPanel.audioPlayer.handleTimeUpdate}
+            className="hidden"
+          />
           <ScriptPanel
             selectedEntry={recordingsPanel.selectedEntry}
             tags={recordingsPanel.tags}
             searchQuery={recordingsPanel.searchQuery}
             scriptMessage={recordingsPanel.scriptMessage}
             onSetEntryTags={recordingsPanel.setEntryTags}
+            audioPlayer={recordingsPanel.audioPlayer}
           />
         </main>
       </div>

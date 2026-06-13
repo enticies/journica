@@ -4,6 +4,7 @@ import { getRecordingPath } from "../api/recordingsApi";
 import { Entry } from "../model/types";
 
 export function useAudioPlayer(onError?: (message: string) => void) {
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -19,14 +20,22 @@ export function useAudioPlayer(onError?: (message: string) => void) {
 
   const stopPlayback = () => {
     audioRef.current?.pause();
+    setActiveId(null);
     setPlayingId(null);
     setCurrentTime(0);
     clearObjectUrl();
   };
 
   const handlePlay = async (entry: Entry) => {
-    if (playingId === entry.id) {
-      stopPlayback();
+    if (activeId === entry.id && audioRef.current) {
+      if (audioRef.current.paused) {
+        await audioRef.current.play();
+        setPlayingId(entry.id);
+        return;
+      }
+
+      audioRef.current.pause();
+      setPlayingId(null);
       return;
     }
 
@@ -50,6 +59,7 @@ export function useAudioPlayer(onError?: (message: string) => void) {
         setCurrentTime(0);
         setDuration(entry.duration_seconds ?? 0);
         await audioRef.current.play();
+        setActiveId(entry.id);
         setPlayingId(entry.id);
       }
     } catch (error) {
@@ -60,6 +70,7 @@ export function useAudioPlayer(onError?: (message: string) => void) {
   };
 
   const handleEnded = () => {
+    setActiveId(null);
     setPlayingId(null);
     setCurrentTime(0);
     clearObjectUrl();
@@ -81,6 +92,7 @@ export function useAudioPlayer(onError?: (message: string) => void) {
 
   return {
     playingId,
+    activeId,
     currentTime,
     duration,
     audioRef,

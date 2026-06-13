@@ -2,6 +2,7 @@ import { Entry } from "../../model/types";
 import { SidebarListItem } from "../../../../shared/ui/SidebarListItem";
 import { Typography } from "../../../../shared/ui/Typography";
 import playIcon from "./play.svg";
+import { PauseIcon } from "../icons";
 import { useEntryListItem } from "./useEntryListItem";
 
 interface Props {
@@ -52,7 +53,7 @@ export function EntryListItem({
                 aria-label={playing ? "Stop playback" : "Play recording"}
                 title={playing ? "Stop" : "Play"}
               >
-                <img src={playIcon} alt="" aria-hidden="true" className="h-3 w-auto" />
+                {playing ? <PauseIcon className="size-3 text-dark-80" /> : <img src={playIcon} alt="" aria-hidden="true" className="h-3 w-auto" />}
               </button>
               <span className="truncate block text-[14px] font-medium leading-5 text-dark-90">
                 {createdAtLabel}
@@ -65,7 +66,7 @@ export function EntryListItem({
           <p className="mt-2 text-[13px] leading-5 text-dark-60">&nbsp;{transcriptPreview}</p>
           {progress !== undefined && (
             <Typography variant="caption" className="mt-2 block text-dark-30">
-              Transcribing: {progress}%
+              &nbsp;Transcribing: {progress}%
             </Typography>
           )}
           <div className="mt-3 flex flex-wrap items-center gap-1">

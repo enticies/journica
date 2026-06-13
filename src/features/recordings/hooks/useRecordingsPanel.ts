@@ -1,8 +1,10 @@
 import { useMemo } from "react";
+import { useAudioPlayer } from "./useAudioPlayer";
 import { useEntriesQuery } from "./useEntriesQuery";
 import { useEntrySelection } from "./useEntrySelection";
 
 export function useRecordingsPanel(folderId?: string | null) {
+  const audioPlayer = useAudioPlayer();
   const {
     entries,
     tags,
@@ -71,5 +73,6 @@ export function useRecordingsPanel(folderId?: string | null) {
     setSelectedEntryId,
     selectedEntry,
     scriptMessage,
+    audioPlayer,
   };
 }

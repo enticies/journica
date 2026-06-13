@@ -6,6 +6,7 @@ import { Entry, Tag } from "../../model/types";
 interface UseScriptPanelParams {
   selectedEntry: Entry | null;
   onSetEntryTags: (entryId: string, tagIds: string[]) => Promise<void>;
+  audioPlayer: ReturnType<typeof useAudioPlayer>;
 }
 
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -22,21 +23,11 @@ function formatCreatedAt(createdAtSeconds: number): string {
   return `${day} ${month} ${hour12}:${minutes} ${period}`;
 }
 
-export function useScriptPanel({ selectedEntry, onSetEntryTags }: UseScriptPanelParams) {
+export function useScriptPanel({ selectedEntry, onSetEntryTags, audioPlayer }: UseScriptPanelParams) {
   const [tagsOpen, setTagsOpen] = useState(false);
   const [draftTagIds, setDraftTagIds] = useState<string[]>([]);
   const [updatingTags, setUpdatingTags] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const {
-    playingId,
-    currentTime,
-    duration,
-    audioRef,
-    handlePlay,
-    handleEnded,
-    handleLoadedMetadata,
-    handleTimeUpdate,
-  } = useAudioPlayer(setErrorMessage);
   const transcript = useMemo(() => selectedEntry?.transcript ?? null, [selectedEntry]);
   const createdAtLabel = useMemo(
     () => (selectedEntry ? formatCreatedAt(selectedEntry.created_at) : ""),
@@ -46,8 +37,9 @@ export function useScriptPanel({ selectedEntry, onSetEntryTags }: UseScriptPanel
     () => (selectedEntry ? formatDuration(selectedEntry.duration_seconds) || "0s" : ""),
     [selectedEntry],
   );
-  const isPlaying = Boolean(selectedEntry && playingId === selectedEntry.id);
-  const progressPercent = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
+  const isPlaying = Boolean(selectedEntry && audioPlayer.playingId === selectedEntry.id);
+  const hasPlaybackProgress = Boolean(selectedEntry && audioPlayer.activeId === selectedEntry.id);
+  const progressPercent = hasPlaybackProgress && audioPlayer.duration > 0 ? Math.min(100, (audioPlayer.currentTime / audioPlayer.duration) * 100) : 0;
 
   const openTags = () => {
     if (!selectedEntry) {
@@ -101,11 +93,7 @@ export function useScriptPanel({ selectedEntry, onSetEntryTags }: UseScriptPanel
     errorMessage,
     isPlaying,
     progressPercent,
-    audioRef,
-    handlePlay,
-    handleEnded,
-    handleLoadedMetadata,
-    handleTimeUpdate,
+    handlePlay: audioPlayer.handlePlay,
     handleToggleTag,
     openTags,
     cancelTags,

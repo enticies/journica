@@ -1,4 +1,5 @@
 import { Entry } from "../../model/types";
+import { useAudioPlayer } from "../../hooks/useAudioPlayer";
 import { EntryList } from "../EntryList";
 import { useRecordingsSidebar } from "./useRecordingsSidebar";
 
@@ -12,6 +13,7 @@ interface Props {
   onDeleteEntry: (id: string) => Promise<void>;
   onSelectEntry: (id: string) => void;
   onLoadMore: () => void;
+  audioPlayer: ReturnType<typeof useAudioPlayer>;
 }
 
 export function RecordingsSidebar({
@@ -24,19 +26,15 @@ export function RecordingsSidebar({
   onDeleteEntry,
   onSelectEntry,
   onLoadMore,
+  audioPlayer,
 }: Props) {
   const {
-    playingId,
-    audioRef,
-    handlePlay,
-    handleEnded,
     handleDeleteEntry,
     progressMap,
   } = useRecordingsSidebar({ onDeleteEntry });
 
   return (
     <div className="h-full flex flex-col bg-light-50">
-      <audio ref={audioRef} onEnded={handleEnded} className="hidden" />
       <EntryList
         entries={entries}
         loading={loading}
@@ -44,11 +42,11 @@ export function RecordingsSidebar({
         hasMore={hasMore}
         searchQuery={searchQuery}
         selectedEntryId={selectedEntryId}
-        playingId={playingId}
+        playingId={audioPlayer.playingId}
         progressMap={progressMap}
         onSelect={onSelectEntry}
         onPlay={(entry) => {
-          void handlePlay(entry);
+          void audioPlayer.handlePlay(entry);
         }}
         onDelete={(id) => {
           void handleDeleteEntry(id);
