@@ -75,7 +75,7 @@ function MainApp() {
   return (
     <div className="h-screen overflow-hidden bg-white">
       <div className="flex h-full w-full flex-col overflow-hidden md:flex-row">
-        <aside className="min-h-0 md:min-w-56 md:basis-1/5 md:max-w-sm">
+        <aside className="min-h-0 md:min-w-0 md:basis-[20%]">
           <NavigationSidebar
             searchQuery={folderSearchQuery}
             onSearchQueryChange={setFolderSearchQuery}
@@ -98,7 +98,7 @@ function MainApp() {
           />
         </aside>
 
-        <div className="min-h-0 border-r border-light-base bg-light-50 md:min-w-72 md:basis-1/4">
+        <div className="min-h-0 border-r border-light-base bg-light-50 md:min-w-0 md:basis-[20%]">
           <RecordingsSidebar
             entries={recordingsPanel.entries}
             selectedEntryId={recordingsPanel.selectedEntryId}
@@ -112,7 +112,7 @@ function MainApp() {
           />
         </div>
 
-        <main className="flex min-h-0 flex-1 min-w-0 overflow-hidden">
+        <main className="flex min-h-0 min-w-0 overflow-hidden md:basis-[60%]">
           <ScriptPanel
             selectedEntry={recordingsPanel.selectedEntry}
             tags={recordingsPanel.tags}

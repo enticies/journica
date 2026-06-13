@@ -1,5 +1,5 @@
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
-use cpal::{Device, SupportedStreamConfig};
+use cpal::{Device, SampleFormat, SupportedStreamConfig};
 use hound::{WavSpec, WavWriter};
 use std::fs::File;
 use std::io::BufWriter;
@@ -33,25 +33,54 @@ fn start_audio(
 
     let writer = WavWriter::create(&file_path, spec).ok()?;
     let shared_writer = Arc::new(Mutex::new(Some(writer)));
-
     let writer_clone = Arc::clone(&shared_writer);
     let stream_config = config.clone().into();
-    let new_stream = device
-        .build_input_stream(
+
+    let write_sample = move |sample: f32| {
+        if let Ok(mut guard) = writer_clone.lock() {
+            if let Some(writer) = guard.as_mut() {
+                writer.write_sample(sample).ok();
+            }
+        }
+    };
+
+    let new_stream = match config.sample_format() {
+        SampleFormat::F32 => device.build_input_stream(
             &stream_config,
             move |data: &[f32], _: &cpal::InputCallbackInfo| {
-                if let Ok(mut guard) = writer_clone.lock() {
-                    if let Some(writer) = guard.as_mut() {
-                        for &sample in data {
-                            writer.write_sample(sample).ok();
-                        }
-                    }
+                for &sample in data {
+                    write_sample(sample);
                 }
             },
             |err| eprintln!("Stream error: {err}"),
             None,
-        )
-        .ok()?;
+        ),
+        SampleFormat::I16 => device.build_input_stream(
+            &stream_config,
+            move |data: &[i16], _: &cpal::InputCallbackInfo| {
+                for &sample in data {
+                    write_sample(sample as f32 / i16::MAX as f32);
+                }
+            },
+            |err| eprintln!("Stream error: {err}"),
+            None,
+        ),
+        SampleFormat::U16 => device.build_input_stream(
+            &stream_config,
+            move |data: &[u16], _: &cpal::InputCallbackInfo| {
+                for &sample in data {
+                    write_sample((sample as f32 - 32768.0) / 32768.0);
+                }
+            },
+            |err| eprintln!("Stream error: {err}"),
+            None,
+        ),
+        sample_format => {
+            eprintln!("Unsupported input sample format: {sample_format:?}");
+            return None;
+        }
+    }
+    .ok()?;
 
     new_stream.play().ok()?;
 

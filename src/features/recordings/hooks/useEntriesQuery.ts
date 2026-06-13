@@ -1,3 +1,4 @@
+import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   createTag as createTagRequest,
@@ -166,6 +167,16 @@ export function useEntriesQuery(folderId?: string | null) {
 
   useEffect(() => {
     void loadEntries();
+  }, [loadEntries]);
+
+  useEffect(() => {
+    const unlisten = listen<{ entry_id: string }>("transcription-complete", () => {
+      void loadEntries();
+    });
+
+    return () => {
+      unlisten.then((fn) => fn());
+    };
   }, [loadEntries]);
 
   useEffect(() => {

@@ -1,5 +1,6 @@
 import { Entry, Tag } from "../../model/types";
-import { CheckIcon, PauseIcon, PlayIcon, TagIcon } from "../icons";
+import playIcon from "../EntryListItem/play.svg";
+import { CheckIcon, TagIcon } from "../icons";
 import { TranscriptView } from "../TranscriptView";
 import { useScriptPanel } from "./useScriptPanel";
 
@@ -51,7 +52,7 @@ export function ScriptPanel({ selectedEntry, tags, searchQuery, scriptMessage, o
         className="hidden"
       />
 
-      <div className="flex w-full max-w-3xl flex-col gap-6">
+      <div className="flex w-full flex-col gap-6">
         <header className="space-y-5">
           <div>
             <h1 className="text-base font-medium text-dark-90">{createdAtLabel}</h1>
@@ -66,7 +67,7 @@ export function ScriptPanel({ selectedEntry, tags, searchQuery, scriptMessage, o
         </header>
 
         <div>
-          <div className="h-2 overflow-hidden rounded-full bg-light-base mb-6" aria-label="Audio progress">
+          <div className="mb-6 h-2 w-full max-w-3xl overflow-hidden rounded-full bg-light-base" aria-label="Audio progress">
             <div
               className="h-full rounded-full bg-dark-80 transition-[width] duration-150"
               style={{ width: `${progressPercent}%` }}
@@ -131,11 +132,11 @@ export function ScriptPanel({ selectedEntry, tags, searchQuery, scriptMessage, o
               onClick={() => {
                 void handlePlay(selectedEntry);
               }}
-              aria-label={isPlaying ? "Pause playback" : "Play recording"}
-              title={isPlaying ? "Pause" : "Play"}
-              className="mr-2 flex size-10 items-center justify-center rounded-full bg-dark-90 text-white transition-colors hover:bg-dark-70"
+              aria-label={isPlaying ? "Stop playback" : "Play recording"}
+              title={isPlaying ? "Stop" : "Play"}
+              className={`mr-2 inline-flex size-10 items-center justify-center rounded-full border border-dark-20 p-2 transition-colors ${isPlaying ? "bg-light-80" : "hover:bg-light-80"}`}
             >
-              {isPlaying ? <PauseIcon className="size-4" /> : <PlayIcon className="size-4" />}
+              <img src={playIcon} alt="" aria-hidden="true" className="h-4 w-auto" />
             </button>
             <button
               type="button"
