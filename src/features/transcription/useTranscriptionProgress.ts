@@ -26,9 +26,19 @@ export function useTranscriptionProgress() {
                 });
             }
         );
+        const unlistenFailed = listen<{ entry_id: string }>(
+            "transcription-failed",
+            (event) => {
+                setProgressMap(prev => {
+                    const { [event.payload.entry_id]: _, ...rest } = prev;
+                    return rest;
+                });
+            }
+        );
         return () => {
             unlistenProgress.then(fn => fn());
             unlistenComplete.then(fn => fn());
+            unlistenFailed.then(fn => fn());
         };
     }, []);
     return progressMap;

@@ -5,9 +5,9 @@ use std::sync::{Mutex, OnceLock};
 
 use tauri::{AppHandle, Emitter, Manager};
 
-const MODEL_FILE_NAME: &str = "ggml-base.en.bin";
+const MODEL_FILE_NAME: &str = "ggml-large-v3-turbo-q5_0.bin";
 const MODEL_URL: &str =
-    "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin?download=true";
+    "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo-q5_0.bin?download=true";
 
 #[derive(Clone, serde::Serialize)]
 pub struct ModelDownloadProgress {

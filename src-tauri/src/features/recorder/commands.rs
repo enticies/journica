@@ -3,7 +3,7 @@ use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 use uuid::Uuid;
 
-use super::audio_engine::AudioCommand;
+use super::audio_engine::{write_manifest, AudioCommand, RecordingManifest};
 use super::types::RecordingInfo;
 use crate::features::recordings::commands::{ensure_today_folder, Entry};
 use crate::features::transcription;
@@ -96,10 +96,24 @@ pub fn start_recording(
 
     let recordings_dir = paths::recordings_dir(&app)?;
     let file_path = recordings_dir.join(&storage_path);
+    let session_dir = recordings_dir.join("in-progress").join(&id);
 
     if let Some(parent) = file_path.parent() {
         std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
     }
+
+    let manifest = RecordingManifest {
+        id: id.clone(),
+        storage_path: storage_path.clone(),
+        display_name: display_name.clone(),
+        created_at,
+        sample_rate: 0,
+        channels: 0,
+        chunks: Vec::new(),
+        total_frames: 0,
+        status: "recording".to_string(),
+    };
+    write_manifest(&session_dir, &manifest)?;
 
     let mut state = state.lock().unwrap();
     state.current_recording = Some(RecordingInfo {
@@ -110,7 +124,11 @@ pub fn start_recording(
     });
     state
         .command_tx
-        .send(AudioCommand::Start { file_path })
+        .send(AudioCommand::Start {
+            session_dir,
+            final_file_path: file_path,
+            manifest,
+        })
         .map_err(|e| e.to_string())?;
 
     println!("Started recording: {}", id);
@@ -165,7 +183,10 @@ pub async fn stop_recording(
             .send(AudioCommand::Stop { response_tx })
             .map_err(|e| e.to_string())?;
 
-        let duration = response_rx.recv().ok().flatten();
+        let duration = response_rx
+            .recv()
+            .map_err(|e| e.to_string())??
+            .duration_seconds;
         (state.current_recording.take(), duration)
     };
 
@@ -191,6 +212,9 @@ pub async fn stop_recording(
         println!("Saved entry: {}", info.id);
 
         transcription::spawn_transcription_thread(file_path, info.id.clone(), app.clone());
+
+        let session_dir = recordings_dir.join("in-progress").join(&info.id);
+        std::fs::remove_dir_all(session_dir).ok();
 
         Ok(Some(Entry {
             id: info.id,

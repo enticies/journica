@@ -34,7 +34,16 @@ pub fn run() {
                 let pool = shared::db::init(&handle)
                     .await
                     .expect("Failed to initialize database");
-                handle.manage(pool);
+                handle.manage(pool.clone());
+                match features::recorder::recovery::recover_incomplete_recordings(&handle, &pool)
+                    .await
+                {
+                    Ok(count) if count > 0 => {
+                        println!("Recovered {count} unfinished recording(s).")
+                    }
+                    Ok(_) => {}
+                    Err(error) => eprintln!("Failed to recover unfinished recordings: {error}"),
+                }
             });
             Ok(())
         })
