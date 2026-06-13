@@ -17,7 +17,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-15-intel, ubuntu-22.04, windows-latest]
+        include:
+          - platform: macos-15-intel
+            rust_target: x86_64-apple-darwin
+            args: --target x86_64-apple-darwin
+          - platform: macos-15
+            rust_target: aarch64-apple-darwin
+            args: --target aarch64-apple-darwin
+          - platform: ubuntu-22.04
+            rust_target: ""
+            args: ""
+          - platform: windows-latest
+            rust_target: ""
+            args: ""
 
     runs-on: ${{ matrix.platform }}
 
@@ -46,8 +58,25 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Add macOS Rust target
+        if: matrix.rust_target != ''
+        run: rustup target add ${{ matrix.rust_target }}
+
       - name: Install frontend dependencies
         run: npm ci
+
+      - name: Validate release version
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          TAURI_VERSION=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          CARGO_VERSION=$(node -e "const cargo = require('fs').readFileSync('./src-tauri/Cargo.toml', 'utf8'); console.log(cargo.match(/^version = \"([^\"]+)\"/m)[1])")
+          TAG_VERSION=${GITHUB_REF_NAME#v}
+          if [ "$PACKAGE_VERSION" != "$TAG_VERSION" ] || [ "$TAURI_VERSION" != "$TAG_VERSION" ] || [ "$CARGO_VERSION" != "$TAG_VERSION" ]; then
+            echo "Release tag v$TAG_VERSION must match package.json ($PACKAGE_VERSION), src-tauri/tauri.conf.json ($TAURI_VERSION), and src-tauri/Cargo.toml ($CARGO_VERSION)."
+            exit 1
+          fi
 
       - name: Build and publish Tauri release
         uses: tauri-apps/tauri-action@v0
@@ -56,6 +85,7 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: "Journica ${{ github.ref_name }}"
-          releaseBody: "Download the installer for your platform. The transcription model downloads on first launch."
+          releaseBody: "Download the installer for your platform. Apple Silicon Macs should use the aarch64 macOS build. The transcription model downloads on first launch."
           releaseDraft: true
           prerelease: false
+          args: ${{ matrix.args }}
