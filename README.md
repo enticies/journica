@@ -8,7 +8,7 @@ Journica is a local-first audio journal for recording spoken notes, transcribing
 
 ## Preview
 
-![Journica app overview](docs/assets/journica-overview.svg)
+![Journica app overview](docs/assets/app-overview.png)
 
 ## Why Journica
 
@@ -17,19 +17,6 @@ Journica is a local-first audio journal for recording spoken notes, transcribing
 - Browse entries by journal date and filter with tags.
 - Search titles, filenames, tags, and transcript text.
 - Recover in-progress recordings after an app or system crash.
-- Play recordings from either the list or transcript view with synced controls.
-
-## Features
-
-| Area | Details |
-| --- | --- |
-| Recording | Start, pause, resume, and stop audio recordings. |
-| Recovery | Active recordings are written in chunks so unexpected shutdowns can be recovered. |
-| Transcription | Whisper runs locally and downloads the model on first launch. |
-| Organization | Journal sections are grouped by date, and entries can be tagged. |
-| Search | Search across entry names, titles, tags, and transcript text. |
-| Playback | Shared audio state keeps controls in the list and script panel aligned. |
-| Privacy | Audio and transcripts stay on your machine. |
 
 ## Downloads
 
@@ -119,7 +106,6 @@ src-tauri/
 
 - The transcription model is downloaded on first launch and reused after that.
 - Release builds are created by the GitHub Actions `Release` workflow when a `v*` tag is pushed.
-- Custom folder membership exists in the data layer but is currently hidden from the UI while tags remain the primary manual organization tool.
 
 ## License
 

@@ -1,31 +1,12 @@
-<svg width="1200" height="520" viewBox="0 0 1200 520" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
-  <title id="title">Journica hero image</title>
-  <desc id="desc">A warm product banner for Journica, a local-first audio journal.</desc>
-  <rect width="1200" height="520" rx="40" fill="#F7F1E8"/>
-  <circle cx="1000" cy="70" r="210" fill="#F4D8C6" opacity="0.75"/>
-  <circle cx="130" cy="460" r="190" fill="#DDE8DD" opacity="0.85"/>
-  <rect x="640" y="84" width="420" height="352" rx="28" fill="#FFFFFF" stroke="#E6DACB" stroke-width="2"/>
-  <rect x="670" y="120" width="92" height="22" rx="11" fill="#1F1D1A" opacity="0.9"/>
-  <rect x="670" y="166" width="330" height="12" rx="6" fill="#E9DED0"/>
-  <rect x="670" y="196" width="270" height="12" rx="6" fill="#E9DED0"/>
-  <rect x="670" y="226" width="310" height="12" rx="6" fill="#E9DED0"/>
-  <rect x="670" y="286" width="300" height="10" rx="5" fill="#E9DED0"/>
-  <rect x="670" y="286" width="170" height="10" rx="5" fill="#1F1D1A" opacity="0.9"/>
-  <circle cx="710" cy="346" r="31" fill="#EF4444"/>
-  <path d="M702 333L728 346L702 359V333Z" fill="white"/>
-  <rect x="766" y="326" width="168" height="40" rx="20" fill="#F6F0E7" stroke="#E6DACB"/>
-  <path d="M780 346H920" stroke="#1F1D1A" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
-  <path d="M230 232C250 178 302 144 360 144C433 144 492 203 492 276C492 349 433 408 360 408C287 408 228 349 228 276" stroke="#1F1D1A" stroke-width="18" stroke-linecap="round"/>
-  <path d="M360 206V276L410 326" stroke="#1F1D1A" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect x="104" y="108" width="52" height="160" rx="26" fill="#EF4444"/>
-  <rect x="180" y="72" width="52" height="232" rx="26" fill="#1F1D1A" opacity="0.88"/>
-  <rect x="256" y="92" width="52" height="192" rx="26" fill="#EF4444" opacity="0.9"/>
-  <text x="104" y="126" fill="#1F1D1A" font-family="Inter, Arial, sans-serif" font-size="58" font-weight="800">Journica</text>
-  <text x="104" y="184" fill="#4B4540" font-family="Inter, Arial, sans-serif" font-size="25" font-weight="500">Private audio journaling with local transcription.</text>
-  <rect x="104" y="365" width="136" height="44" rx="22" fill="#1F1D1A"/>
-  <text x="132" y="394" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="700">Record</text>
-  <rect x="258" y="365" width="154" height="44" rx="22" fill="#FFFFFF" stroke="#E0D3C4"/>
-  <text x="286" y="394" fill="#1F1D1A" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="700">Transcribe</text>
-  <rect x="430" y="365" width="128" height="44" rx="22" fill="#FFFFFF" stroke="#E0D3C4"/>
-  <text x="460" y="394" fill="#1F1D1A" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="700">Search</text>
+<svg width="1200" height="420" viewBox="0 0 1200 420" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Journica</title>
+  <desc id="desc">A simple warm banner with the Journica name.</desc>
+  <rect width="1200" height="420" rx="40" fill="#F7F1E8"/>
+  <circle cx="1010" cy="40" r="230" fill="#F4D8C6" opacity="0.72"/>
+  <circle cx="150" cy="420" r="220" fill="#DDE8DD" opacity="0.82"/>
+  <circle cx="600" cy="210" r="118" fill="#FFFFFF" opacity="0.72"/>
+  <circle cx="600" cy="210" r="74" fill="#EF4444" opacity="0.96"/>
+  <circle cx="600" cy="210" r="18" fill="#FFFFFF"/>
+  <path d="M506 210C506 158 548 116 600 116C652 116 694 158 694 210C694 262 652 304 600 304C548 304 506 262 506 210Z" stroke="#1F1D1A" stroke-width="10" opacity="0.12"/>
+  <text x="600" y="365" text-anchor="middle" fill="#1F1D1A" font-family="Inter, Arial, sans-serif" font-size="82" font-weight="800" letter-spacing="-2">Journica</text>
 </svg>
