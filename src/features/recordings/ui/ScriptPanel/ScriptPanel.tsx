@@ -144,7 +144,7 @@ export function ScriptPanel({
                 disabled={tags.length === 0 || updatingTags}
                 className="rounded-full border border-dark-20 px-4 py-2 text-sm font-semibold text-dark-80 transition-colors hover:bg-light-30 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Add tag
+                Tags
               </button>
             </div>
           </div>

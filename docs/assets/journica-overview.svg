@@ -1,0 +1,56 @@
+<svg width="1200" height="720" viewBox="0 0 1200 720" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Journica app overview</title>
+  <desc id="desc">A stylized overview of the Journica desktop interface with journal navigation, recordings, and transcript panels.</desc>
+  <rect width="1200" height="720" rx="36" fill="#EFE7DC"/>
+  <rect x="70" y="64" width="1060" height="592" rx="30" fill="#FFFFFF" stroke="#DCCDBB" stroke-width="2"/>
+  <rect x="70" y="64" width="218" height="592" rx="30" fill="#F8F2EA"/>
+  <rect x="288" y="64" width="218" height="592" fill="#FBF7F1"/>
+  <path d="M288 64V656" stroke="#E4D8C8"/>
+  <path d="M506 64V656" stroke="#E4D8C8"/>
+  <circle cx="112" cy="116" r="22" fill="#EF4444"/>
+  <rect x="148" y="96" width="44" height="40" rx="20" fill="#FFFFFF" stroke="#E1D4C4"/>
+  <rect x="206" y="96" width="58" height="40" rx="20" fill="#FFFFFF" stroke="#E1D4C4"/>
+  <rect x="96" y="168" width="154" height="34" rx="17" fill="#FFFFFF" stroke="#E1D4C4"/>
+  <text x="96" y="244" fill="#8B7E70" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="800" letter-spacing="1.5">JOURNAL</text>
+  <rect x="96" y="264" width="160" height="32" rx="12" fill="#EDE3D7"/>
+  <text x="116" y="285" fill="#1F1D1A" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700">2026</text>
+  <rect x="112" y="306" width="128" height="30" rx="10" fill="#F8F2EA"/>
+  <text x="132" y="326" fill="#4C453E" font-family="Inter, Arial, sans-serif" font-size="14">June</text>
+  <text x="224" y="326" fill="#8B7E70" font-family="Inter, Arial, sans-serif" font-size="12">12</text>
+  <text x="96" y="386" fill="#8B7E70" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="800" letter-spacing="1.5">TAGS</text>
+  <rect x="96" y="406" width="154" height="30" rx="10" fill="#FFFFFF"/>
+  <text x="118" y="426" fill="#4C453E" font-family="Inter, Arial, sans-serif" font-size="14">Ideas</text>
+  <text x="228" y="426" fill="#8B7E70" font-family="Inter, Arial, sans-serif" font-size="12">7</text>
+  <rect x="96" y="446" width="154" height="30" rx="10" fill="#FFFFFF"/>
+  <text x="118" y="466" fill="#4C453E" font-family="Inter, Arial, sans-serif" font-size="14">Work</text>
+  <text x="228" y="466" fill="#8B7E70" font-family="Inter, Arial, sans-serif" font-size="12">4</text>
+  <rect x="320" y="96" width="154" height="34" rx="17" fill="#FFFFFF" stroke="#E1D4C4"/>
+  <rect x="320" y="164" width="154" height="16" rx="8" fill="#1F1D1A" opacity="0.9"/>
+  <rect x="320" y="210" width="154" height="86" rx="18" fill="#FFFFFF" stroke="#E4D8C8"/>
+  <circle cx="344" cy="238" r="14" fill="#1F1D1A"/>
+  <path d="M339 230L351 238L339 246V230Z" fill="#FFFFFF"/>
+  <rect x="368" y="226" width="80" height="12" rx="6" fill="#1F1D1A" opacity="0.82"/>
+  <rect x="368" y="252" width="92" height="9" rx="4.5" fill="#D8CCBD"/>
+  <rect x="368" y="270" width="64" height="9" rx="4.5" fill="#D8CCBD"/>
+  <rect x="320" y="318" width="154" height="86" rx="18" fill="#F8F2EA" stroke="#E4D8C8"/>
+  <circle cx="344" cy="346" r="14" fill="#EF4444"/>
+  <path d="M340 338L352 346L340 354V338Z" fill="#FFFFFF"/>
+  <rect x="368" y="334" width="74" height="12" rx="6" fill="#1F1D1A" opacity="0.82"/>
+  <rect x="368" y="360" width="86" height="9" rx="4.5" fill="#D8CCBD"/>
+  <rect x="368" y="378" width="54" height="9" rx="4.5" fill="#D8CCBD"/>
+  <text x="552" y="130" fill="#1F1D1A" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="800">15 Jun 3:42 PM</text>
+  <rect x="552" y="176" width="142" height="28" rx="14" fill="#F8F2EA" stroke="#E4D8C8"/>
+  <text x="572" y="195" fill="#4C453E" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700">Duration 18m</text>
+  <rect x="552" y="246" width="430" height="10" rx="5" fill="#E6DACB"/>
+  <rect x="552" y="246" width="238" height="10" rx="5" fill="#1F1D1A" opacity="0.9"/>
+  <circle cx="582" cy="304" r="22" fill="#FFFFFF" stroke="#D2C4B4"/>
+  <path d="M577 294L592 304L577 314V294Z" fill="#1F1D1A"/>
+  <rect x="626" y="282" width="94" height="44" rx="22" fill="#FFFFFF" stroke="#D2C4B4"/>
+  <text x="648" y="310" fill="#1F1D1A" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700">Add tag</text>
+  <text x="552" y="396" fill="#1F1D1A" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="800">Transcript</text>
+  <rect x="552" y="428" width="462" height="12" rx="6" fill="#D8CCBD"/>
+  <rect x="552" y="462" width="506" height="12" rx="6" fill="#D8CCBD"/>
+  <rect x="552" y="496" width="440" height="12" rx="6" fill="#D8CCBD"/>
+  <rect x="552" y="530" width="514" height="12" rx="6" fill="#D8CCBD"/>
+  <rect x="552" y="564" width="348" height="12" rx="6" fill="#D8CCBD"/>
+</svg>
