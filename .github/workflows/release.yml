@@ -64,7 +64,7 @@ jobs:
 
       - name: Configure Apple Silicon whisper build
         if: matrix.rust_target == 'aarch64-apple-darwin'
-        run: echo "WHISPER_NATIVE=OFF" >> "$GITHUB_ENV"
+        run: echo "GGML_NATIVE=OFF" >> "$GITHUB_ENV"
 
       - name: Install frontend dependencies
         run: npm ci

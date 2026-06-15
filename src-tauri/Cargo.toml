@@ -35,7 +35,7 @@ hound = "3.5.1"
 sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "migrate"] }
 uuid = { version = "1", features = ["v4"] }
 # Transcription
-whisper-rs = "0.15.1"
+whisper-rs = "0.16.0"
 rubato = "1.0.0"
 audioadapter = "2.0.0"
 audioadapter-buffers = "2.0.0"
