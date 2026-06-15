@@ -4,9 +4,5 @@
   <rect width="1200" height="420" rx="40" fill="#F7F1E8"/>
   <circle cx="1010" cy="40" r="230" fill="#F4D8C6" opacity="0.72"/>
   <circle cx="150" cy="420" r="220" fill="#DDE8DD" opacity="0.82"/>
-  <circle cx="600" cy="210" r="118" fill="#FFFFFF" opacity="0.72"/>
-  <circle cx="600" cy="210" r="74" fill="#EF4444" opacity="0.96"/>
-  <circle cx="600" cy="210" r="18" fill="#FFFFFF"/>
-  <path d="M506 210C506 158 548 116 600 116C652 116 694 158 694 210C694 262 652 304 600 304C548 304 506 262 506 210Z" stroke="#1F1D1A" stroke-width="10" opacity="0.12"/>
-  <text x="600" y="365" text-anchor="middle" fill="#1F1D1A" font-family="Inter, Arial, sans-serif" font-size="82" font-weight="800" letter-spacing="-2">Journica</text>
+  <text x="600" y="210" text-anchor="middle" dominant-baseline="middle" fill="#1F1D1A" font-family="Inter, Arial, sans-serif" font-size="96" font-weight="800" letter-spacing="-2">Journica</text>
 </svg>
