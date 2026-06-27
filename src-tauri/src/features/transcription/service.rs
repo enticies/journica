@@ -62,6 +62,11 @@ fn transcribe(file_path: PathBuf, entry_id: &str, app: &AppHandle) -> Result<(),
     let samples = audio_prep::convert_audio(&file_path)
         .map_err(|err| format!("Error loading audio file '{}': {err}", file_path.display()))?;
 
+    if audio_prep::is_effectively_silent(&samples) {
+        println!("Skipping transcription for silent recording: {entry_id}");
+        return save_segments(entry_id, app, &[]);
+    }
+
     let ctx = WhisperContext::new_with_params(
         model_path.to_string_lossy().as_ref(),
         WhisperContextParameters::default(),
@@ -103,13 +108,15 @@ fn transcribe(file_path: PathBuf, entry_id: &str, app: &AppHandle) -> Result<(),
         .full(params, &samples[..])
         .map_err(|err| format!("Failed to run transcription model: {err}"))?;
 
-    let db = app.state::<SqlitePool>();
-
     let mut segments: Vec<TranscriptSegment> = Vec::new();
     for (i, segment) in state.as_iter().enumerate() {
         let start_ms = (segment.start_timestamp() * 10) as u64;
         let end_ms = (segment.end_timestamp() * 10) as u64;
-        let text = segment.to_str().unwrap_or_default().to_owned();
+        let text = segment.to_str().unwrap_or_default().trim().to_owned();
+
+        if text.is_empty() {
+            continue;
+        }
 
         segments.push(TranscriptSegment {
             segment_index: i as u64,
@@ -118,6 +125,16 @@ fn transcribe(file_path: PathBuf, entry_id: &str, app: &AppHandle) -> Result<(),
             text,
         });
     }
+
+    save_segments(entry_id, app, &segments)
+}
+
+fn save_segments(
+    entry_id: &str,
+    app: &AppHandle,
+    segments: &[TranscriptSegment],
+) -> Result<(), String> {
+    let db = app.state::<SqlitePool>();
 
     tauri::async_runtime::block_on(async {
         let mut tx = db.begin().await.map_err(|e| e.to_string())?;
@@ -134,7 +151,7 @@ fn transcribe(file_path: PathBuf, entry_id: &str, app: &AppHandle) -> Result<(),
             .await
             .map_err(|e| e.to_string())?;
 
-        for segment in &segments {
+        for segment in segments {
             sqlx::query(
                     "INSERT INTO transcript_segments (entry_id, segment_index, start_ms, end_ms, text) VALUES (?, ?, ?, ?, ?)",
                 )

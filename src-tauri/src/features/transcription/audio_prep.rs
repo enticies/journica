@@ -8,6 +8,26 @@ use rubato::{
 use std::path::Path;
 
 const WHISPER_SAMPLE_RATE: u32 = 16000;
+const MIN_TRANSCRIPTION_SECONDS: f32 = 0.5;
+const SILENCE_RMS_THRESHOLD: f32 = 0.004;
+const SILENCE_PEAK_THRESHOLD: f32 = 0.02;
+
+pub fn is_effectively_silent(samples: &[f32]) -> bool {
+    if samples.len() < (WHISPER_SAMPLE_RATE as f32 * MIN_TRANSCRIPTION_SECONDS) as usize {
+        return true;
+    }
+
+    let mut sum_squares = 0.0_f32;
+    let mut peak = 0.0_f32;
+    for sample in samples {
+        let abs = sample.abs();
+        sum_squares += sample * sample;
+        peak = peak.max(abs);
+    }
+
+    let rms = (sum_squares / samples.len() as f32).sqrt();
+    rms < SILENCE_RMS_THRESHOLD && peak < SILENCE_PEAK_THRESHOLD
+}
 
 pub fn convert_audio(path: &Path) -> Result<Vec<f32>, Box<dyn std::error::Error + Send + Sync>> {
     let reader = WavReader::open(path)?;
@@ -25,7 +45,7 @@ pub fn convert_audio(path: &Path) -> Result<Vec<f32>, Box<dyn std::error::Error 
             .collect(),
         hound::SampleFormat::Int => {
             let bits = spec.bits_per_sample;
-            let max_val = (1i32 << (bits - 1)) as f32;
+            let max_val = (1_i64 << (bits - 1)) as f32;
             reader
                 .into_samples::<i32>()
                 .filter_map(|s| s.ok())

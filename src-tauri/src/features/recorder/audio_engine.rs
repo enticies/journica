@@ -78,6 +78,24 @@ fn create_wav_writer(path: &Path, spec: WavSpec) -> Result<WavWriter<BufWriter<F
     WavWriter::create(path, spec).map_err(|e| e.to_string())
 }
 
+fn wav_spec(channels: u16, sample_rate: u32) -> WavSpec {
+    WavSpec {
+        channels,
+        sample_rate,
+        bits_per_sample: 16,
+        sample_format: hound::SampleFormat::Int,
+    }
+}
+
+fn sample_to_i16(sample: f32) -> i16 {
+    let clamped = sample.clamp(-1.0, 1.0);
+    if clamped >= 0.0 {
+        (clamped * i16::MAX as f32) as i16
+    } else {
+        (clamped * -(i16::MIN as f32)) as i16
+    }
+}
+
 struct ChunkedWriter {
     session_dir: PathBuf,
     final_file_path: PathBuf,
@@ -129,7 +147,9 @@ impl ChunkedWriter {
 
     fn write_sample(&mut self, sample: f32) -> Result<(), String> {
         if let Some(writer) = self.writer.as_mut() {
-            writer.write_sample(sample).map_err(|e| e.to_string())?;
+            writer
+                .write_sample(sample_to_i16(sample))
+                .map_err(|e| e.to_string())?;
             self.samples_in_chunk += 1;
             self.manifest.total_frames +=
                 (self.samples_in_chunk % self.spec.channels as u64 == 0) as u64;
@@ -204,12 +224,7 @@ pub fn merge_manifest_chunks(
     let tmp_final_path = final_file_path.with_extension("wav.tmp");
     std::fs::remove_file(&tmp_final_path).ok();
 
-    let spec = WavSpec {
-        channels: manifest.channels,
-        sample_rate: manifest.sample_rate,
-        bits_per_sample: 32,
-        sample_format: hound::SampleFormat::Float,
-    };
+    let spec = wav_spec(manifest.channels, manifest.sample_rate);
 
     let mut writer = create_wav_writer(&tmp_final_path, spec)?;
     let mut total_samples = 0_u64;
@@ -223,7 +238,7 @@ pub fn merge_manifest_chunks(
             ));
         }
 
-        for sample in reader.samples::<f32>() {
+        for sample in reader.samples::<i16>() {
             writer
                 .write_sample(sample.map_err(|e| e.to_string())?)
                 .map_err(|e| e.to_string())?;
@@ -247,12 +262,7 @@ fn start_audio(
 ) -> Option<(cpal::Stream, SharedWriter)> {
     println!("Starting recording session in {:?}", session_dir);
 
-    let spec = WavSpec {
-        channels: config.channels(),
-        sample_rate: config.sample_rate().0,
-        bits_per_sample: 32,
-        sample_format: hound::SampleFormat::Float,
-    };
+    let spec = wav_spec(config.channels(), config.sample_rate().0);
 
     manifest.sample_rate = spec.sample_rate;
     manifest.channels = spec.channels;
